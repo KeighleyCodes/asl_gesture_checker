@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import streamlit as st
 
 
 # Detection function
@@ -45,3 +46,24 @@ def extract_key_points(results):
     return np.concatenate([pose, face, left_hand, right_hand])
 
 
+def display_gesture_checkboxes(gesture_gifs):
+    # Define the number of columns for checkboxes
+    num_cols = 3
+
+    # Define a checkbox for each gesture
+    selected_gestures = {}
+    gesture_columns = [st.columns(num_cols) for _ in range((len(gesture_gifs) + num_cols - 1) // num_cols)]
+    for i, gesture_name in enumerate(gesture_gifs.keys()):
+        col_index = i // num_cols
+        selected_gestures[gesture_name] = gesture_columns[col_index][i % num_cols].checkbox(gesture_name)
+
+    # Return the dictionary of selected gestures
+    return selected_gestures
+
+
+def display_gif(gif_path, gesture_name):
+    # Display the GIF
+    st.markdown(f"![Gesture GIF]({gif_path})")
+
+    # Store the state of the displayed GIF
+    st.session_state[f"{gesture_name}_gif_displayed"] = True

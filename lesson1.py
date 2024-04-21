@@ -5,15 +5,35 @@ import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 
-from shared_functions import mediapipe_detection, extract_key_points
+from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
 
 
 def lesson_page_1():
     st.title("Lesson 1")
-    st.write("In this lesson, we will practice the gestures 'again', 'alive', 'dad', 'family', 'friend', "
-             "'hard_of_hearing', 'help_me', 'how', 'hungry', and 'like'")
+    st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
+             "ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
+    st.write(" In this lesson, we will practice the following gestures:")
+
+    # Define a dictionary mapping gesture names to GIF paths
+    gesture_gifs = {
+        "again": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjc2Ynl6enU2a3ZhNmU4emV3MDFpNjU0am56MzNvbjMybXQxenY4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Rfek7db5VppCEnUDFa/giphy.gif",
+        "alive": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnl2ODhuODlheDBkZ2kwa3M4dmRldmttYTZ0N3Aza3VxbGZpdmJ3eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26DOMIFuQMlhmuSeQ/giphy.gif",
+        "dad": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWRiMDlnY3p0amUyenc3cmtnZzFiYmNsbzk1ZTl6d20xbHYxajQyZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/DlRqK9fPBqslq/giphy.gif",
+        "family": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYXFxcWYyd204aWZnMDViOTZrNmtsbTE1bnc1ZDAycXhjeXlkM2x0cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iMVGmMBWvhSnXhMEeC/giphy.gif",
+        "friend": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExa25qaHN2NG5wc2tzd21memg0dmJvZ21nMmg1M2hnOGk3anR3anV2biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/01ElOr4vP00LXFdnqw/giphy.gif",
+        "hard of hearing": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3gzYW9vdW9iejNvNnVzemo0NmdhdXJkamNjNDB0cnNkbmVubHZqOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/AFaXqCHOcJvgAWECie/giphy.gif",
+        "help me": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWhmZHhsa3k2Y3o5MW1kdTc3NmMwNHJ2aGJ6OXdrY3h1czM2YzFlZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oz8xxZjw8HJxLcmD6/giphy.gif",
+        "how": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdXo3b2dueWtndHg2bHI2OXcxOTAwenZyMDVkcXpzaDdoZzg5NWV0aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SQULsLII4A1lpmYVtT/giphy.gif",
+        "hungry": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3B0d2R3OXFrc2V6bWpweTA5cWNjZDhvYTN1enFvbDh5MHV4NHc4dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vR0xkdFEz4tnfTq/giphy.gif",
+        "like": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeTdrM3U2NnNldmM4OGZ0aWVtMjlucGRvZjRsMDBjeXJmZ2x0ZzBldCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9YxRxIPmHOY9qMKWTd/giphy.gif"
+    }
+
+    selected_gestures = display_gesture_checkboxes(gesture_gifs)
+    for gesture_name, selected in selected_gestures.items():
+        if selected:
+            display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
 
     try:
         lesson1_model = load_model('lesson1.keras')
@@ -35,7 +55,7 @@ def lesson_page_1():
     sequence_length = 30
 
     # Create a dictionary of labels
-    lesson1_label_map = {label:num for num, label in enumerate(lesson1_actions)}
+    lesson1_label_map = {label: num for num, label in enumerate(lesson1_actions)}
 
     # Array of sequences (features) used to train model to represent relationship between labels
     lesson1_sequences, lesson1_labels = [], []
@@ -110,7 +130,6 @@ def lesson_page_1():
                     res = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
                     predicted_action_index = np.argmax(res)
                     predictions.append(predicted_action_index)
-
 
                     # Visualization logic
                     # If result above threshold

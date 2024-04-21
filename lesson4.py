@@ -5,7 +5,7 @@ import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 
-from shared_functions import mediapipe_detection, extract_key_points
+from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
 
@@ -14,6 +14,29 @@ def lesson_page_4():
     st.title("Lesson 4")
     st.write("In this lesson we will practice the gestures 'good', 'happy', 'hearing', 'mine', 'no', 'yes', 'what', "
              "'where', 'who', 'you', and 'yours'.")
+    st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
+             "ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
+    st.write(" In this lesson, we will practice the following gestures:")
+
+    # Define a dictionary mapping gesture names to GIF paths
+    gesture_gifs = {
+        "good": "",
+        "happy": "",
+        "hearing": "",
+        "mine": "",
+        "no": "",
+        "yes": "",
+        "what": "",
+        "where": "",
+        "who": "",
+        "you": "",
+        "yours": ""
+    }
+
+    selected_gestures = display_gesture_checkboxes(gesture_gifs)
+    for gesture_name, selected in selected_gestures.items():
+        if selected:
+            display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
 
     try:
         lesson4_model = load_model('lesson4.keras')
