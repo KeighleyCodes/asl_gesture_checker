@@ -12,9 +12,6 @@ mp_holistic = mp.solutions.holistic
 
 def lesson_page_3():
     st.title("Lesson 3")
-    st.write("In this lesson we will practice the gestures 'name', 'need', 'now', 'please', 'sad', 'school', 'slow', "
-             "'sorry', 'wait', and 'want'.")
-
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
              "ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
     st.write(" In this lesson, we will practice the following gestures:")
