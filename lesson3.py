@@ -4,6 +4,7 @@ import numpy as np
 import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
+import traceback
 
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
@@ -39,6 +40,7 @@ def lesson_page_3():
         lesson3_model = load_model('lesson3.keras')
     except Exception as e:
         st.error(f"Error loading the model: {e}")
+        st.error(f"Exception traceback: {traceback.format_exc()}")
         st.stop()
 
     # Sets path for exported data (numpy arrays)

@@ -4,6 +4,7 @@ import numpy as np
 import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
+import traceback
 
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
@@ -39,6 +40,7 @@ def lesson_page_1():
         lesson1_model = load_model('lesson1.keras')
     except Exception as e:
         st.error(f"Error loading the model: {e}")
+        st.error(f"Exception traceback: {traceback.format_exc()}")
         st.stop()
 
     # Sets path for exported data (numpy arrays)
@@ -126,14 +128,19 @@ def lesson_page_1():
                 sequence = sequence[-30:]
 
                 # Run prediction only if the length of sequence equals 30
+                # Run prediction only if the length of sequence equals 30
                 if len(sequence) == 30:
                     res = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
                     predicted_action_index = np.argmax(res)
                     predictions.append(predicted_action_index)
 
+                    # Print the value of res and threshold for debugging
+                    print("Value of res:", res)
+                    print("Value of threshold:", threshold)
+
                     # Visualization logic
                     # If result above threshold
-                    if results[predicted_action_index] > threshold:
+                    if res[predicted_action_index] > threshold:
                         sentence.append(lesson1_actions[predicted_action_index])
 
                 # If the sentence length is greater than 5
