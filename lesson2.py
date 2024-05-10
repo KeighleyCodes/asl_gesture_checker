@@ -50,9 +50,9 @@ def lesson_page_2():
         # Sets path for exported data (numpy arrays)
         DATA_PATH = os.path.join('lesson2')
 
-        # Actions to detect (x actions multiplied by 30 frames multiplied by 30 sequences)
-        lesson2_actions = np.array(
-            ['bad', 'can', 'candy', 'done', 'dont_like', 'dont_understand', 'i_love_you', 'love', 'mom', 'more'])
+        # Actions to detect (10 actions multiplied by 30 frames multiplied by 30 sequences)
+        lesson2_actions = np.array(['bad', 'can', 'candy', 'done', 'dont_like', 'dont_understand', 'i_love_you', 'love',
+                                    'mom', 'more'])
 
         # Number of videos
         num_sequences = 30

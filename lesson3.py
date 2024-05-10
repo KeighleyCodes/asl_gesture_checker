@@ -112,5 +112,3 @@ def lesson_page_3():
             cv2.destroyAllWindows()
 
         start_video_feed3()
-
-lesson_page_3()

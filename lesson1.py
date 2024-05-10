@@ -60,10 +60,10 @@ def lesson_page_1():
         # Number of frames
         sequence_length = 30
 
-        # Label mapping
+        # Creates a dictionary of labels
         lesson1_label_map = {label: num for num, label in enumerate(lesson1_actions)}
 
-        # Sequences and labels
+        # Array of sequences (features) used to train model to represent relationship between labels
         lesson1_sequences, lesson1_labels = [], []
 
         # loops through each action

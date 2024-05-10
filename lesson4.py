@@ -9,6 +9,8 @@ import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
+
+
 def lesson_page_4():
     st.title("Lesson 4")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
@@ -171,4 +173,3 @@ def lesson_page_4():
         # Start the video feed
         start_video_feed4()
 
-lesson_page_4()
