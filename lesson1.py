@@ -5,11 +5,25 @@ import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
+import zipfile
+import tempfile
 
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
 
+def load_model_from_zip(model_zip):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        with zipfile.ZipFile(model_zip) as myzipfile:
+            myzipfile.extractall(tmp_dir)
+            model_files = os.listdir(tmp_dir)
+            # Assuming there's only one model file in the zip
+            model_file = next((f for f in model_files if f.endswith('.keras')), None)
+            if model_file:
+                model_path = os.path.join(tmp_dir, model_file)
+                return load_model(model_path)
+            else:
+                return None
 
 def lesson_page_1():
     st.title("Lesson 1")
