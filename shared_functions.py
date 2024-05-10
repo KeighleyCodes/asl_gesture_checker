@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 import streamlit as st
+import os
+import requests
+import zipfile
 
 
 # Detection function
@@ -67,3 +70,18 @@ def display_gif(gif_path, gesture_name):
 
     # Store the state of the displayed GIF
     st.session_state[f"{gesture_name}_gif_displayed"] = True
+
+
+# download_model.py
+def download_and_extract_model(model_url):
+    response = requests.get(model_url)
+    if response.status_code == 200:
+        with open('model.zip', 'wb') as f:
+            f.write(response.content)
+
+        with zipfile.ZipFile('model.zip', 'r') as zip_ref:
+            zip_ref.extractall('model')
+
+        os.remove('model.zip')
+    else:
+        print("Failed to download the model file. Please check your internet connection and try again.")
