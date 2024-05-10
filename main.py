@@ -11,6 +11,9 @@ def information_page():
              "section of the page. You will be able to use your webcam to practice your ASL gestures for each "
              "of the lessons.")
 
+    st.write("The program will start predicting gestures as soon as the video feed begins, analyzing each frame for "
+             "possible gestures. Take your time and try the gestures multiple times for accurate feedback.")
+
 
 def main():
     st.sidebar.title("Hands On Learning")
