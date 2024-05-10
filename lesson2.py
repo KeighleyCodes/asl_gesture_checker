@@ -5,7 +5,6 @@ import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
-from model_loader import load_lesson_model
 
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
@@ -42,15 +41,14 @@ def lesson_page_2():
 
     if start_button_pressed:
         try:
-            # Load the lesson 2 model
-            lesson2_model = load_lesson_model(2)
+            lesson2_model = load_model('lesson2.keras')
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
             st.stop()
 
         # Sets path for exported data (numpy arrays)
-        DATA_PATH = os.path.join(os.path.dirname(__file__), 'lesson2')
+        DATA_PATH = os.path.join('lesson2')
 
         # Actions to detect (x actions multiplied by 30 frames multiplied by 30 sequences)
         lesson2_actions = np.array(
