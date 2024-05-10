@@ -43,7 +43,7 @@ def lesson_page_2():
     if start_button_pressed:
         try:
             # Load the lesson 2 model
-            lesson1_model = load_lesson_model(2)
+            lesson2_model = load_lesson_model(2)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")

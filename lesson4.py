@@ -44,7 +44,7 @@ def lesson_page_4():
     if start_button_pressed:
         try:
             # Load the lesson 4 model
-            lesson1_model = load_lesson_model(4)
+            lesson4_model = load_lesson_model(4)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
@@ -81,7 +81,9 @@ def lesson_page_4():
                 # Loops through each frame
                 for frame_num in range(sequence_length):
                     # Loads frame
-                    res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
+                    file_path = os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num))
+                    print("Constructed file path:", file_path)
+                    res = np.load(file_path)
 
                     # Add frames to window
                     window.append(res)
