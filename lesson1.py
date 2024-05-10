@@ -7,20 +7,10 @@ from tensorflow.keras.models import load_model
 import traceback
 import zipfile
 import tempfile
-import requests
-from shared_functions import download_and_extract_model
-
 
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
-
-# URL of the zipped model file on GitHub
-model_url = 'https://github.com/KeighleyCodes/asl_gesture_checker/raw/master/models/lesson1.zip'
-
-# Call the function to download and extract the model file
-download_and_extract_model(model_url)
-
 
 def lesson_page_1():
     st.title("Lesson 1")
