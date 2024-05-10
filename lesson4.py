@@ -9,8 +9,6 @@ import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
-
-
 def lesson_page_4():
     st.title("Lesson 4")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
@@ -92,7 +90,6 @@ def lesson_page_4():
 
         # Function to start the video feed
         def start_video_feed4():
-
             # Button to stop the video feed
             stop_button_pressed = st.button("Stop camera")
 
@@ -167,13 +164,11 @@ def lesson_page_4():
                     if stop_button_pressed:
                         break
 
-                    # Check for user input to exit the loop
-                    if cv2.waitKey(1) & 0xFF == ord('q'):
-                        break
-
                 # Releases the camera feed, closes all windows
                 capture.release()
                 cv2.destroyAllWindows()
 
         # Start the video feed
         start_video_feed4()
+
+lesson_page_4()

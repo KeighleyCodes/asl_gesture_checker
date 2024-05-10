@@ -14,10 +14,10 @@ mp_holistic = mp.solutions.holistic
 def lesson_page_1():
     st.title("Lesson 1")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
-             "ready, select 'Start Camera' to begin practicing the gestures.")
+             "ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
     st.write(" In this lesson, we will practice the following gestures:")
 
-    # Define a dictionary mapping gesture names to GIF paths
+    # Define a dictionary mapping gesture names to GIF paths for Lesson 1
     gesture_gifs = {
         "again": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWk0ZW1scnI5eHFoMWQ5ZWJiazJuNWQ5OWFtOTRndWo1bHUxdHpyeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XSvXpnvUizxUP09NaQ/giphy.gif",
         "alive": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXZoenl0MzY2ZGFuOWw5cjVoam93d3FoYzZ1OHd4dGNjbzlrbHNxayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/FwJwOTJGk1WudLKCSH/giphy.gif",
@@ -50,7 +50,7 @@ def lesson_page_1():
         # Sets path for exported data (numpy arrays)
         DATA_PATH = os.path.join('lesson1')
 
-        # Actions to detect (13 actions multiplied by 30 frames multiplied by 30 sequences)
+        # Actions to detect (10 actions multiplied by 30 frames multiplied by 30 sequences)
         lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
                                     'hungry', 'like'])
 
@@ -60,24 +60,24 @@ def lesson_page_1():
         # Number of frames
         sequence_length = 30
 
-        # Create a dictionary of labels
+        # Label mapping
         lesson1_label_map = {label: num for num, label in enumerate(lesson1_actions)}
 
-        # Array of sequences (features) used to train model to represent relationship between labels
+        # Sequences and labels
         lesson1_sequences, lesson1_labels = [], []
 
-        # Loop through each action
+        # loops through each action
         for action in lesson1_actions:
 
-            # Loop through each sequence
+            # Loops through each sequence
             for sequence_index in range(num_sequences):
 
                 # Blank array to represent all frames for particular sequence
                 window = []
 
-                # Loop through each frame
+                # Loops through each frame
                 for frame_num in range(sequence_length):
-                    # Load frame
+                    # Loads frame
                     res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
 
                     # Add frames to window
@@ -90,8 +90,7 @@ def lesson_page_1():
                 lesson1_labels.append(lesson1_label_map[action])
 
         # Function to start the video feed
-        def start_video_feed():
-
+        def start_video_feed1():
             # Button to stop the video feed
             stop_button_pressed = st.button("Stop camera")
 
@@ -106,8 +105,8 @@ def lesson_page_1():
             # Only renders results if above a certain threshold
             threshold = 0.4
 
-            # Open the video capture device
-            capture = cv2.VideoCapture(0)  # Use 0 for the default camera, or change it to 1 if you have multiple cameras
+            # Function for opening the video feed
+            capture = cv2.VideoCapture(0)
 
             # Display a placeholder for the frame
             frame_placeholder = st.empty()
@@ -115,8 +114,9 @@ def lesson_page_1():
             # Initial detection confidence & tracking confidence set
             with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
 
-                # Loop to continuously read frames until the stop button is pressed or the video feed ends
-                while capture.isOpened() and not stop_button_pressed:
+                # While the camera is opened
+                while capture.isOpened():
+                    # Reads feed
                     ret, frame = capture.read()
 
                     # Make detections
@@ -133,17 +133,13 @@ def lesson_page_1():
 
                     # Run prediction only if the length of sequence equals 30
                     if len(sequence) == 30:
-                        res = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
-                        predicted_action_index = np.argmax(res)
+                        results = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
+                        predicted_action_index = np.argmax(results)
                         predictions.append(predicted_action_index)
-
-                        # Print the value of res and threshold for debugging
-                        print("Value of res:", res)
-                        print("Value of threshold:", threshold)
 
                         # Visualization logic
                         # If result above threshold
-                        if res[predicted_action_index] > threshold:
+                        if results[predicted_action_index] > threshold:
                             sentence.append(lesson1_actions[predicted_action_index])
 
                     # If the sentence length is greater than 5
@@ -151,11 +147,8 @@ def lesson_page_1():
                         # Grab the last five values
                         sentence = sentence[-5:]
 
-                        # Get the latest predicted action
-                        latest_predicted_action = sentence[-1]
-
-                        # Render predictions onto the video frame
-                        cv2.putText(image, latest_predicted_action, (3, 30),
+                    if len(sentence) > 0:
+                        cv2.putText(image, sentence[-1], (3, 30),
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
                     # Convert the OpenCV image to RGB
@@ -172,13 +165,9 @@ def lesson_page_1():
                     if stop_button_pressed:
                         break
 
-                    # Check for user input to exit the loop
-                    if cv2.waitKey(1) & 0xFF == ord('q'):
-                        break
-
-                # Release the video capture device and close all windows
-                capture.release()
-                cv2.destroyAllWindows()
+            # Releases the camera feed, closes all windows
+            capture.release()
+            cv2.destroyAllWindows()
 
         # Start the video feed
-        start_video_feed()
+        start_video_feed1()

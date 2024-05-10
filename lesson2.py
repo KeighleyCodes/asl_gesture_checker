@@ -91,7 +91,6 @@ def lesson_page_2():
 
         # Function to start the video feed
         def start_video_feed2():
-
             # Button to stop the video feed
             stop_button_pressed = st.button("Stop camera")
 
@@ -166,13 +165,9 @@ def lesson_page_2():
                     if stop_button_pressed:
                         break
 
-                    # Check for user input to exit the loop
-                    if cv2.waitKey(1) & 0xFF == ord('q'):
-                        break
-
-                # Releases the camera feed, closes all windows
-                capture.release()
-                cv2.destroyAllWindows()
+            # Releases the camera feed, closes all windows
+            capture.release()
+            cv2.destroyAllWindows()
 
         # Start the video feed
         start_video_feed2()
