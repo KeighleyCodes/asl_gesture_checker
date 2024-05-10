@@ -8,7 +8,7 @@ import traceback
 import zipfile
 import tempfile
 import requests
-from utils.download_model import download_and_extract_model
+from shared_functions import download_and_extract_model
 
 
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
