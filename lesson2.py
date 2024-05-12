@@ -5,7 +5,6 @@ import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
-
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
@@ -91,6 +90,7 @@ def lesson_page_2():
 
         # Function to start the video feed
         def start_video_feed2():
+
             # Button to stop the video feed
             stop_button_pressed = st.button("Stop camera")
 
@@ -133,18 +133,18 @@ def lesson_page_2():
 
                     # Run prediction only if the length of sequence equals 30
                     if len(sequence) == 30:
-                        results = lesson2_model.predict(np.expand_dims(sequence, axis=0))[0]
-                        predicted_action_index = np.argmax(results)
-                        predictions.append(predicted_action_index)
+                        try:
+                            results = lesson2_model.predict(np.expand_dims(sequence, axis=0))[0]
+                            predicted_action_index = np.argmax(results)
+                            predictions.append(predicted_action_index)
 
-                        # Visualization logic
-                        # If result above threshold
-                        if results[predicted_action_index] > threshold:
-                            sentence.append(lesson2_actions[predicted_action_index])
+                            if results[predicted_action_index] > threshold:
+                                sentence.append(lesson2_actions[predicted_action_index])
+                        except Exception as e:
+                            st.error(f"Error during prediction: {e}")
+                            st.error(f"Exception traceback: {traceback.format_exc()}")
 
-                    # If the sentence length is greater than 5
                     if len(sentence) > 5:
-                        # Grab the last five values
                         sentence = sentence[-5:]
 
                     if len(sentence) > 0:
@@ -157,7 +157,8 @@ def lesson_page_2():
                     # Display the frame with predictions overlaid using Streamlit
                     frame_placeholder.image(image_rgb, channels="RGB")
 
-                    if not ret:  # Check if frame was successfully read
+                    # Check if frame was successfully read
+                    if not ret:
                         st.write("The video capture has ended.")
                         break
 

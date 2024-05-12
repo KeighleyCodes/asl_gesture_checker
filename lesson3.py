@@ -5,10 +5,10 @@ import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
-
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
+
 
 def lesson_page_3():
     st.title("Lesson 3")
@@ -46,39 +46,91 @@ def lesson_page_3():
             st.error(f"Exception traceback: {traceback.format_exc()}")
             st.stop()
 
+        # Sets path for exported data (numpy arrays)
         DATA_PATH = os.path.join('lesson3')
+
+        # Actions to detect (10 actions multiplied by 30 frames multiplied by 30 sequences)
         lesson3_actions = np.array(['name', 'need', 'now', 'please', 'sad', 'school', 'slow', 'sorry', 'wait', 'want'])
+
+        # Number of videos
         num_sequences = 30
+
+        # Number of frames
         sequence_length = 30
+
+        # Creates a dictionary of labels
         lesson3_label_map = {label: num for num, label in enumerate(lesson3_actions)}
+
+        # Array of sequences (features) used to train model to represent relationship between labels
         lesson3_sequences, lesson3_labels = [], []
 
+        # loops through each action
         for action in lesson3_actions:
+
+            # Loops through each sequence
             for sequence_index in range(num_sequences):
+
+                # Blank array to represent all frames for particular sequence
                 window = []
+
+                # Loops through each frame
                 for frame_num in range(sequence_length):
+                    # Loads frame
                     res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
+
+                    # Add frames to window
                     window.append(res)
+
+                # Append video to sequences
                 lesson3_sequences.append(window)
+
+                # Append labels
                 lesson3_labels.append(lesson3_label_map[action])
 
+        # Function to start the video feed
         def start_video_feed3():
+
+            # Button to stop the video feed
             stop_button_pressed = st.button("Stop camera")
+
+            # Appending to list collects 30 frames to generate prediction
             sequence = []
+
+            # Allows concatenation of history
             sentence = []
+
             predictions = []
+
+            # Only renders results if above a certain threshold
             threshold = 0.4
+
+            # Function for opening the video feed
             capture = cv2.VideoCapture(0)
+
+            # Display a placeholder for the frame
             frame_placeholder = st.empty()
 
+            # Initial detection confidence & tracking confidence set
             with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+
+                # While the camera is opened
                 while capture.isOpened():
+                    # Reads feed
                     ret, frame = capture.read()
+
+                    # Make detections
                     image, results = mediapipe_detection(frame, holistic)
+
+                    # Extract key points from video
                     key_points = extract_key_points(results)
+
+                    # Appending key points to sequence list
                     sequence.append(key_points)
+
+                    # Grabs the last 30 frames to generate a prediction
                     sequence = sequence[-30:]
 
+                    # Run prediction only if the length of sequence equals 30
                     if len(sequence) == 30:
                         try:
                             results = lesson3_model.predict(np.expand_dims(sequence, axis=0))[0]
@@ -98,17 +150,24 @@ def lesson_page_3():
                         cv2.putText(image, sentence[-1], (3, 30),
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
+                    # Convert the OpenCV image to RGB
                     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+                    # Display the frame with predictions overlaid using Streamlit
                     frame_placeholder.image(image_rgb, channels="RGB")
 
+                    # Check if frame was successfully read
                     if not ret:
                         st.write("The video capture has ended.")
                         break
 
+                    # Check if the stop button is pressed
                     if stop_button_pressed:
                         break
 
+            # Releases the camera feed, closes all windows
             capture.release()
             cv2.destroyAllWindows()
 
+        # Start the video feed
         start_video_feed3()

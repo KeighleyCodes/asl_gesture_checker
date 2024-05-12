@@ -5,12 +5,10 @@ import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
-import zipfile
-import tempfile
-
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
+
 
 def lesson_page_1():
     st.title("Lesson 1")
