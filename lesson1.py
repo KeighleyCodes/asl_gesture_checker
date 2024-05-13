@@ -43,12 +43,6 @@ def lesson_page_1():
 
     if start_button_pressed:
 
-        # Print current working directory
-        print("Current working directory:", os.getcwd())
-
-        # List contents of the models directory
-        print("Contents of the models directory:", os.listdir('models'))
-
         # Load model
         try:
             lesson1_model = load_model('lesson1.keras')
