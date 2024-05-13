@@ -40,8 +40,9 @@ def lesson_page_1():
 
     if start_button_pressed:
         try:
-            lesson1_model = load_model('lesson1.keras')
-            print("File path:", 'lesson1.keras')
+            file_path = 'lesson1.keras'
+            print("File path:", file_path)
+            lesson1_model = load_model(file_path)
 
         except Exception as e:
             st.error(f"Error loading the model: {e}")
