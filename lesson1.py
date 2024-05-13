@@ -6,6 +6,8 @@ import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
+import keras
+import tensorflow as tf
 
 mp_holistic = mp.solutions.holistic
 
@@ -39,6 +41,13 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
+
+        # Print TensorFlow version
+        st.write("TensorFlow version:", tf.__version__)
+
+        # Print Keras version
+        st.write("Keras version:", keras.__version__)
+
         try:
             lesson1_model = load_model('lesson1.keras')
 

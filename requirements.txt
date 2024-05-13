@@ -4,3 +4,5 @@ numpy==1.26.4
 mediapipe==0.10.11
 tensorflow==2.16.1
 requests~=2.31.0
+pandas==2.2.2
+keras~=3.2.1
