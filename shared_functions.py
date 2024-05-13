@@ -61,6 +61,7 @@ def display_gesture_checkboxes(gesture_gifs):
     return selected_gestures
 
 
+# Function to display GIF gestures
 def display_gif(gif_path, gesture_name):
     # Display the GIF
     st.markdown(f"![Gesture GIF]({gif_path})")

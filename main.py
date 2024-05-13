@@ -6,6 +6,7 @@ from lesson4 import lesson_page_4
 
 
 def information_page():
+
     st.title("Hands On Learning")
     st.write("Welcome to Hands on Learning's virtual lesson practice. Please select a lesson from the left "
              "section of the page. You will be able to use your webcam to practice your ASL gestures for each "
@@ -16,7 +17,11 @@ def information_page():
 
 
 def main():
+
+    # Sidebar title
     st.sidebar.title("Hands On Learning")
+
+    # Sidebar lesson selector box
     lesson = st.sidebar.selectbox("Select Lesson", ["Home", "Lesson 1", "Lesson 2", "Lesson 3", "Lesson 4"])
 
     if lesson == "Home":

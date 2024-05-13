@@ -32,6 +32,7 @@ def lesson_page_1():
         "like": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmo3dm41ZDcwYTIzNG01ejkyNjcyYnpzMjRiZnFobTZnYmRkOWczZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Laj5J3k8ysyXdLo8m2/giphy.gif"
     }
 
+    # Checkboxes for selecting GIFs
     selected_gestures = display_gesture_checkboxes(gesture_gifs)
     for gesture_name, selected in selected_gestures.items():
         if selected:
@@ -42,15 +43,9 @@ def lesson_page_1():
 
     if start_button_pressed:
 
-        # Print TensorFlow version
-        st.write("TensorFlow version:", tf.__version__)
-
-        # Print Keras version
-        st.write("Keras version:", keras.__version__)
-
+        # Load model
         try:
             lesson1_model = load_model('lesson1.keras')
-
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")

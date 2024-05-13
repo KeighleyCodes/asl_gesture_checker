@@ -30,6 +30,7 @@ def lesson_page_2():
         "more": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHoyczRseGoxaGplMjNzZGIzYWt2M2xjdG42Mjg3eHVvNzZ6YXUzZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/rNjL6EDJdultC1B6dN/giphy.gif"
     }
 
+    # Checkboxes for selecting GIFs
     selected_gestures = display_gesture_checkboxes(gesture_gifs)
     for gesture_name, selected in selected_gestures.items():
         if selected:
@@ -39,6 +40,8 @@ def lesson_page_2():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
+
+        # Load model
         try:
             lesson2_model = load_model('lesson2.keras')
         except Exception as e:
