@@ -49,7 +49,7 @@ def lesson_page_1():
         st.write("Keras version:", keras.__version__)
 
         try:
-            lesson1_model = load_model('lesson1.keras')
+            lesson1_model = load_model('lesson1.h5')
 
         except Exception as e:
             st.error(f"Error loading the model: {e}")
