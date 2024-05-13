@@ -39,142 +39,147 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-        try:
-            lesson1_model = load_model('lesson1.keras')
+        # Define the file path
+        file_path = 'lesson1.keras'
 
-        except Exception as e:
-            st.error(f"Error loading the model: {e}")
-            st.error(f"Exception traceback: {traceback.format_exc()}")
+        # Check if the file exists
+        if os.path.exists(file_path):
+            try:
+                lesson1_model = load_model(file_path)
+
+            except Exception as e:
+                st.error(f"Error loading the model: {e}")
+                st.error(f"Exception traceback: {traceback.format_exc()}")
+                st.stop()
+
+            # Sets path for exported data (numpy arrays)
+            DATA_PATH = os.path.join('lesson1')
+
+            # Actions to detect (10 actions multiplied by 30 frames multiplied by 30 sequences)
+            lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
+                                        'hungry', 'like'])
+
+            # Number of videos
+            num_sequences = 30
+
+            # Number of frames
+            sequence_length = 30
+
+            # Creates a dictionary of labels
+            lesson1_label_map = {label: num for num, label in enumerate(lesson1_actions)}
+
+            # Array of sequences (features) used to train model to represent relationship between labels
+            lesson1_sequences, lesson1_labels = [], []
+
+            # loops through each action
+            for action in lesson1_actions:
+
+                # Loops through each sequence
+                for sequence_index in range(num_sequences):
+
+                    # Blank array to represent all frames for particular sequence
+                    window = []
+
+                    # Loops through each frame
+                    for frame_num in range(sequence_length):
+                        # Loads frame
+                        res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
+
+                        # Add frames to window
+                        window.append(res)
+
+                    # Append video to sequences
+                    lesson1_sequences.append(window)
+
+                    # Append labels
+                    lesson1_labels.append(lesson1_label_map[action])
+
+            # Function to start the video feed
+            def start_video_feed1():
+                # Button to stop the video feed
+                stop_button_pressed = st.button("Stop camera")
+
+                # Appending to list collects 30 frames to generate prediction
+                sequence = []
+
+                # Allows concatenation of history
+                sentence = []
+
+                predictions = []
+
+                # Only renders results if above a certain threshold
+                threshold = 0.4
+
+                # Function for opening the video feed
+                capture = cv2.VideoCapture(0)
+
+                # Display a placeholder for the frame
+                frame_placeholder = st.empty()
+
+                # Initial detection confidence & tracking confidence set
+                with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+
+                    # While the camera is opened
+                    while capture.isOpened():
+                        # Reads feed
+                        ret, frame = capture.read()
+
+                        # Make detections
+                        image, results = mediapipe_detection(frame, holistic)
+
+                        # Extract key points from video
+                        key_points = extract_key_points(results)
+
+                        # Appending key points to sequence list
+                        sequence.append(key_points)
+
+                        # Grabs the last 30 frames to generate a prediction
+                        sequence = sequence[-30:]
+
+                        # Run prediction only if the length of sequence equals 30
+                        if len(sequence) == 30:
+                            results = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
+                            predicted_action_index = np.argmax(results)
+                            predictions.append(predicted_action_index)
+
+                            # Visualization logic
+                            # If result above threshold
+                            if results[predicted_action_index] > threshold:
+                                sentence.append(lesson1_actions[predicted_action_index])
+
+                        # If the sentence length is greater than 5
+                        if len(sentence) > 5:
+                            # Grab the last five values
+                            sentence = sentence[-5:]
+
+                        if len(sentence) > 0:
+                            cv2.putText(image, sentence[-1], (3, 30),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+
+                        # Convert the OpenCV image to RGB
+                        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+                        # Display the frame with predictions overlaid using Streamlit
+                        frame_placeholder.image(image_rgb, channels="RGB")
+
+                        if not ret:  # Check if frame was successfully read
+                            st.write("The video capture has ended.")
+                            break
+
+                        # Check if the stop button is pressed
+                        if stop_button_pressed:
+                            break
+
+                # Releases the camera feed, closes all windows
+                capture.release()
+                cv2.destroyAllWindows()
+
+            # Start the video feed
+            start_video_feed1()
+        else:
+            st.error("The model file does not exist.")
             st.stop()
 
-        # Sets path for exported data (numpy arrays)
-        DATA_PATH = os.path.join('lesson1')
 
-        # Actions to detect (10 actions multiplied by 30 frames multiplied by 30 sequences)
-        lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
-                                    'hungry', 'like'])
-
-        # Number of videos
-        num_sequences = 30
-
-        # Number of frames
-        sequence_length = 30
-
-        # Creates a dictionary of labels
-        lesson1_label_map = {label: num for num, label in enumerate(lesson1_actions)}
-
-        # Array of sequences (features) used to train model to represent relationship between labels
-        lesson1_sequences, lesson1_labels = [], []
-
-        # loops through each action
-        for action in lesson1_actions:
-
-            # Loops through each sequence
-            for sequence_index in range(num_sequences):
-
-                # Blank array to represent all frames for particular sequence
-                window = []
-
-                # Loops through each frame
-                for frame_num in range(sequence_length):
-                    # Loads frame
-                    res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
-
-                    # Add frames to window
-                    window.append(res)
-
-                # Append video to sequences
-                lesson1_sequences.append(window)
-
-                # Append labels
-                lesson1_labels.append(lesson1_label_map[action])
-
-        # Function to start the video feed
-        def start_video_feed1():
-            # Button to stop the video feed
-            stop_button_pressed = st.button("Stop camera")
-
-            # Appending to list collects 30 frames to generate prediction
-            sequence = []
-
-            # Allows concatenation of history
-            sentence = []
-
-            predictions = []
-
-            # Only renders results if above a certain threshold
-            threshold = 0.4
-
-            # Function for opening the video feed
-            capture = cv2.VideoCapture(0)
-
-            # Display a placeholder for the frame
-            frame_placeholder = st.empty()
-
-            # Initial detection confidence & tracking confidence set
-            with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-
-                # While the camera is opened
-                while capture.isOpened():
-                    # Reads feed
-                    ret, frame = capture.read()
-
-                    # Make detections
-                    image, results = mediapipe_detection(frame, holistic)
-
-                    # Extract key points from video
-                    key_points = extract_key_points(results)
-
-                    # Appending key points to sequence list
-                    sequence.append(key_points)
-
-                    # Grabs the last 30 frames to generate a prediction
-                    sequence = sequence[-30:]
-
-                    # Run prediction only if the length of sequence equals 30
-                    if len(sequence) == 30:
-                        results = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
-                        predicted_action_index = np.argmax(results)
-                        predictions.append(predicted_action_index)
-
-                        # Visualization logic
-                        # If result above threshold
-                        if results[predicted_action_index] > threshold:
-                            sentence.append(lesson1_actions[predicted_action_index])
-
-                    # If the sentence length is greater than 5
-                    if len(sentence) > 5:
-                        # Grab the last five values
-                        sentence = sentence[-5:]
-
-                    if len(sentence) > 0:
-                        cv2.putText(image, sentence[-1], (3, 30),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-
-                    # Convert the OpenCV image to RGB
-                    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-                    # Display the frame with predictions overlaid using Streamlit
-                    frame_placeholder.image(image_rgb, channels="RGB")
-
-                    if not ret:  # Check if frame was successfully read
-                        st.write("The video capture has ended.")
-                        break
-
-                    # Check if the stop button is pressed
-                    if stop_button_pressed:
-                        break
-
-            # Releases the camera feed, closes all windows
-            capture.release()
-            cv2.destroyAllWindows()
-
-        # Start the video feed
-        start_video_feed1()
-
-
-file_path = 'lesson1.keras'
-if os.path.exists(file_path):
-    print("File exists.")
-else:
-    print("File does not exist.")
+if __name__ == "__main__":
+    lesson_page_1()
