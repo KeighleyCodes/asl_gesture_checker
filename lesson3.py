@@ -40,7 +40,7 @@ def lesson_page_3():
 
     if start_button_pressed:
         try:
-            lesson3_model = load_model('lesson3.h5')
+            lesson3_model = load_model('lesson3.keras')
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
