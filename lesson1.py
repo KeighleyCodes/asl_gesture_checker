@@ -45,7 +45,7 @@ def lesson_page_1():
 
         # Load model
         try:
-            lesson1_model = load_model('Models/lesson1.keras')
+            lesson1_model = load_model('models/lesson1.keras')
 
         except Exception as e:
             st.error(f"Error loading the model: {e}")
