@@ -36,6 +36,9 @@ def lesson_page_3():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
 
+    # Define the path to your Keras files folder on Google Drive
+    keras_files_path = '/content/drive/My Drive/keras_files/'
+
     # Button to start the video feed
     start_button_pressed = st.button("Start camera")
 
@@ -43,7 +46,8 @@ def lesson_page_3():
 
         # Load model
         try:
-            lesson3_model = load_model('lesson3.keras')
+            lesson3_model_path = os.path.join(keras_files_path, 'lesson3.keras')
+            lesson3_model = load_model(lesson3_model_path)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")

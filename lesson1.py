@@ -9,11 +9,6 @@ from shared_functions import mediapipe_detection, extract_key_points, display_gi
 
 mp_holistic = mp.solutions.holistic
 
-# Define path to Keras model file
-keras_files_path = r'G:\My Drive\keras_files'
-model_file_path = os.path.join(keras_files_path, 'lesson1.keras')
-
-
 def lesson_page_1():
     st.title("Lesson 1")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
@@ -40,6 +35,9 @@ def lesson_page_1():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
 
+    # Define the path to your Keras files folder on Google Drive
+    keras_files_path = '/content/drive/My Drive/keras_files/'
+
     # Button to start the video feed
     start_button_pressed = st.button("Start camera")
 
@@ -47,7 +45,8 @@ def lesson_page_1():
 
         # Load model
         try:
-            lesson1_model = load_model(model_file_path)
+            lesson1_model_path = os.path.join(keras_files_path, 'lesson1.keras')
+            lesson1_model = load_model(lesson1_model_path)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
