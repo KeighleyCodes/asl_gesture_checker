@@ -41,13 +41,8 @@ def lesson_page_1():
     # Button to start the video feed
     start_button_pressed = st.button("Start camera")
 
-    # Print current working directory
-    st.write("Current working directory:", os.getcwd())
-
-    # List contents of the models directory
-    st.write("Contents of the models directory:", os.listdir('models'))
-
     if start_button_pressed:
+
 
         # Load model
         try:
