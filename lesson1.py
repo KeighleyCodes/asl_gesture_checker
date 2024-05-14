@@ -43,10 +43,12 @@ def lesson_page_1():
 
     if start_button_pressed:
 
+        # Define the path to your Keras files folder on Google Drive
+        keras_files_path = '/content/drive/My Drive/keras files/'
 
         # Load model
         try:
-            lesson1_model = load_model('lesson1.keras')
+            lesson1_model = load_model(keras_files_path + 'lesson1.keras')
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
