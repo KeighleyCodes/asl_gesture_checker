@@ -6,10 +6,12 @@ import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
-import keras
-import tensorflow as tf
 
 mp_holistic = mp.solutions.holistic
+
+# Define path to Keras model file
+keras_files_path = r'G:\My Drive\keras_files'
+model_file_path = os.path.join(keras_files_path, 'lesson1.keras')
 
 
 def lesson_page_1():
@@ -43,12 +45,9 @@ def lesson_page_1():
 
     if start_button_pressed:
 
-        # Define the path to your Keras files folder on Google Drive
-        keras_files_path = '/content/drive/My Drive/keras files/'
-
         # Load model
         try:
-            lesson1_model = load_model(keras_files_path + 'lesson1.keras')
+            lesson1_model = load_model(model_file_path)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
