@@ -17,6 +17,8 @@ def information_page():
 
 
 def main():
+    # Clear the page
+    st.empty()
 
     # Sidebar title
     st.sidebar.title("Hands On Learning")

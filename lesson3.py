@@ -5,13 +5,9 @@ import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
-from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes, \
-    download_file
+from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
-
-# GCS URL where models are stored
-gcs_base_url = "https://storage.googleapis.com/my-keras-files-bucket/"
 
 
 def lesson_page_3():
@@ -44,15 +40,10 @@ def lesson_page_3():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
+
         # Load model
         try:
-            # Download the model file
-            lesson3_model_url = os.path.join(gcs_base_url, 'lesson3.keras')
-            local_model_path = 'lesson3.keras'
-            download_file(lesson3_model_url, local_model_path)
-
-            # Load model from local file
-            lesson3_model = load_model(local_model_path)
+            lesson3_model = load_model('lesson3.keras')
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
