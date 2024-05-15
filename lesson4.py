@@ -1,4 +1,3 @@
-import requests
 import streamlit as st
 import cv2
 import numpy as np
@@ -6,20 +5,13 @@ import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
-from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
+from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes, \
+    download_file
 
 mp_holistic = mp.solutions.holistic
 
 # GCS URL where models are stored
 gcs_base_url = "https://storage.googleapis.com/my-keras-files-bucket/"
-
-
-def download_file(url, local_filename):
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(local_filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
 
 
 def lesson_page_4():
@@ -53,7 +45,6 @@ def lesson_page_4():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-
         # Load model
         try:
             # Download the model file
