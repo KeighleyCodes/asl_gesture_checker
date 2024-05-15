@@ -9,6 +9,10 @@ from shared_functions import mediapipe_detection, extract_key_points, display_gi
 
 mp_holistic = mp.solutions.holistic
 
+# GCS URL where models are stored
+gcs_base_url = "https://storage.googleapis.com/my-keras-files-bucket/"
+
+
 def lesson_page_1():
     st.title("Lesson 1")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
@@ -45,8 +49,9 @@ def lesson_page_1():
 
         # Load model
         try:
-            lesson1_model_path = os.path.join(keras_files_path, 'lesson1.h5')
-            lesson1_model = load_model(lesson1_model_path)
+            # Load model from GCS URL
+            lesson1_model_url = os.path.join(gcs_base_url, 'lesson1.h5')
+            lesson1_model = load_model(lesson1_model_url)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")

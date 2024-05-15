@@ -9,6 +9,9 @@ from shared_functions import mediapipe_detection, extract_key_points, display_gi
 
 mp_holistic = mp.solutions.holistic
 
+# GCS URL where models are stored
+gcs_base_url = "https://storage.googleapis.com/my-keras-files-bucket/"
+
 
 def lesson_page_3():
     st.title("Lesson 3")
@@ -46,8 +49,9 @@ def lesson_page_3():
 
         # Load model
         try:
-            lesson3_model_path = os.path.join(keras_files_path, 'lesson3.h5')
-            lesson3_model = load_model(lesson3_model_path)
+            # Load model from GCS URL
+            lesson3_model_url = os.path.join(gcs_base_url, 'lesson3.h5')
+            lesson3_model = load_model(lesson3_model_url)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")

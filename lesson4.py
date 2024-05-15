@@ -9,15 +9,8 @@ from shared_functions import mediapipe_detection, extract_key_points, display_gi
 
 mp_holistic = mp.solutions.holistic
 
-# Define the path to your Google Drive directory
-google_drive_path = '/content/drive/My Drive'
-
-# List the contents of the Google Drive directory
-files = os.listdir(google_drive_path)
-
-# Display the list of files in Streamlit
-st.write("Files in Google Drive:")
-st.write(files)
+# GCS URL where models are stored
+gcs_base_url = "https://storage.googleapis.com/my-keras-files-bucket/"
 
 
 def lesson_page_4():
@@ -47,9 +40,6 @@ def lesson_page_4():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
 
-    # Define the path to your Keras files folder on Google Drive
-    keras_files_path = '/content/drive/My Drive/keras_files/'
-
     # Button to start the video feed
     start_button_pressed = st.button("Start camera")
 
@@ -57,8 +47,9 @@ def lesson_page_4():
 
         # Load model
         try:
-            lesson4_model_path = os.path.join(keras_files_path, 'lesson4.h5')
-            lesson4_model = load_model(lesson4_model_path)
+            # Load model from GCS URL
+            lesson4_model_url = os.path.join(gcs_base_url, 'lesson4.h5')
+            lesson4_model = load_model(lesson4_model_url)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
