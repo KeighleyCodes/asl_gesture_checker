@@ -4,6 +4,7 @@ from lesson2 import lesson_page_2
 from lesson3 import lesson_page_3
 from lesson4 import lesson_page_4
 from test_page import test_page
+from test_page_2 import test_page_2
 
 
 def information_page():
@@ -26,7 +27,8 @@ def main():
 
     # Sidebar lesson selector box
 
-    lesson = st.sidebar.selectbox("Select Lesson", ["Home", "Lesson 1", "Lesson 2", "Lesson 3", "Lesson 4", "FOR TESTING"])
+    lesson = st.sidebar.selectbox("Select Lesson", ["Home", "Lesson 1", "Lesson 2", "Lesson 3", "Lesson 4",
+                                                    "FOR TESTING", "TESTING 2"])
 
     if lesson == "Home":
         information_page()
@@ -40,6 +42,8 @@ def main():
         lesson_page_4()
     elif lesson == "FOR TESTING":
         test_page()
+    elif lesson == "TESTING 2":
+        test_page_2()
 
 
 if __name__ == "__main__":
