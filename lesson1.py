@@ -13,12 +13,6 @@ mp_holistic = mp.solutions.holistic
 # GCS URL where models are stored
 gcs_base_url = "https://storage.googleapis.com/my-keras-files-bucket/"
 
-lesson1_model_url = os.path.join(gcs_base_url, 'lesson1.keras')
-st.write("Lesson 1 Model URL:", lesson1_model_url)
-
-lesson4_model_url = os.path.join(gcs_base_url, 'lesson4.keras')
-st.write("Lesson 4 Model URL:", lesson4_model_url)
-
 
 def lesson_page_1():
     st.title("Lesson 1")
