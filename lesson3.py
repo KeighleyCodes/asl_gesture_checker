@@ -46,7 +46,7 @@ def lesson_page_3():
 
         # Load model
         try:
-            lesson3_model_path = os.path.join(keras_files_path, 'lesson3.keras')
+            lesson3_model_path = os.path.join(keras_files_path, 'lesson3.h5')
             lesson3_model = load_model(lesson3_model_path)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
