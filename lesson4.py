@@ -57,7 +57,7 @@ def lesson_page_4():
         # Load model
         try:
             # Download the model file
-            lesson4_model_url = os.path.join(gcs_base_url, 'lesson4.h5')
+            lesson4_model_url = os.path.join(gcs_base_url, 'lesson4.keras')
             local_model_path = 'lesson4.h5'
             download_file(lesson4_model_url, local_model_path)
 
