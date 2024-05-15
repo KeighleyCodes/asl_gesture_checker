@@ -39,9 +39,6 @@ def lesson_page_3():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
 
-    # Define the path to your Keras files folder on Google Drive
-    keras_files_path = '/content/drive/My Drive/keras_files/'
-
     # Button to start the video feed
     start_button_pressed = st.button("Start camera")
 
