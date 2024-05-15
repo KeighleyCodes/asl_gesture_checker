@@ -5,25 +5,27 @@ import numpy as np
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
-from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes, \
-    download_file
+from st_files_connection import FilesConnection  # Import the connection object
+import pandas as pd  # Import pandas for file reading
+from shared_functions import display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
 
-gcs_base_url = "https://storage.googleapis.com/my-keras-files-bucket"
+# Create a connection object for GCS
+conn = st.connection('gcs', type=FilesConnection)
 
 
 # Function to download Keras model file if not already downloaded
 def download_keras_model():
-    if not os.path.exists('lesson1.keras'):
-        lesson1_model_url = os.path.join(gcs_base_url, 'lesson1.keras')
-        download_file(lesson1_model_url, 'lesson1.keras')
+    # This function is not needed anymore as we'll load the model from GCS
+    pass
 
 
-# Load Keras model
+# Load Keras model from GCS
 def load_keras_model():
     try:
-        model = load_model('lesson1.keras')
+        # Read the Keras model file directly from GCS
+        model = load_model(conn.read("lesson1.keras", input_format="keras"))
         return model
     except Exception as e:
         st.error(f"Error loading the model: {e}")
@@ -31,6 +33,7 @@ def load_keras_model():
         return None
 
 
+# Main function for lesson page 1
 def lesson_page_1():
     st.title("Lesson 1")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
@@ -58,9 +61,6 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-        # Download Keras model if not already downloaded
-        download_keras_model()
-
         # Load Keras model
         model = load_keras_model()
         if model is None:
@@ -92,8 +92,9 @@ def lesson_page_1():
                     st.write(f"Subdirectory {subdir_path} exists.")
                     window = []
                     for frame_num in range(sequence_length):
-                        res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
-                        window.append(res)
+                        # Replace local file loading with GCS file loading
+                        npy_data = conn.read(f"{subdir_path}/{frame_num}.npy", input_format="npy")
+                        window.append(npy_data)
                     lesson1_sequences.append(window)
                     lesson1_labels.append(lesson1_label_map[action])
 
@@ -135,3 +136,7 @@ def lesson_page_1():
             cv2.destroyAllWindows()
 
         start_video_feed1()
+
+
+# Run the lesson page function
+lesson_page_1()
