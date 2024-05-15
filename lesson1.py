@@ -39,11 +39,15 @@ def lesson_page_1():
     # Button to start the video feed
     start_button_pressed = st.button("Start camera")
 
+    # Update the path to point to your model file in Google Drive
+    model_path = '/content/drive/My Drive/keras_files/lesson1.keras'
+
     if start_button_pressed:
 
         # Load model
         try:
-            lesson1_model = load_model('lesson1.keras')
+            # Load the Keras model from Google Drive
+            lesson1_model = load_model(model_path)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")

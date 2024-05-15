@@ -14,8 +14,23 @@ def load_file(file_name):
         st.error(f"File not found: {file_path}")
 
 
+def check_file_exists(file_path):
+    if os.path.isfile(file_path):
+        st.success(f"File found: {file_path}")
+    else:
+        st.error(f"File not found: {file_path}")
+
+
 def test_page():
     st.title("Test Page")
     st.write("Click the button below to load a file from the 'models' directory:")
     if st.button("Load File"):
         load_file("example.txt")
+
+    st.title("File Existence Checker")
+
+    # Define the file path to check
+    file_path = "lesson1.keras"
+
+    # Check if the file exists
+    check_file_exists(file_path)
