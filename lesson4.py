@@ -1,3 +1,4 @@
+import requests
 import streamlit as st
 import cv2
 import numpy as np
@@ -11,6 +12,14 @@ mp_holistic = mp.solutions.holistic
 
 # GCS URL where models are stored
 gcs_base_url = "https://storage.googleapis.com/my-keras-files-bucket/"
+
+
+def download_file(url, local_filename):
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
 
 
 def lesson_page_4():
@@ -47,9 +56,13 @@ def lesson_page_4():
 
         # Load model
         try:
-            # Load model from GCS URL
+            # Download the model file
             lesson4_model_url = os.path.join(gcs_base_url, 'lesson4.h5')
-            lesson4_model = load_model(lesson4_model_url)
+            local_model_path = 'lesson4.h5'
+            download_file(lesson4_model_url, local_model_path)
+
+            # Load model from local file
+            lesson4_model = load_model(local_model_path)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
