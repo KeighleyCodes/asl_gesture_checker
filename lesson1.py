@@ -69,6 +69,12 @@ def lesson_page_1():
         # Sets path for exported data (numpy arrays)
         DATA_PATH = os.path.join('lesson1')
 
+        # Check if DATA_PATH exists
+        if not os.path.exists(DATA_PATH):
+            st.write(f"Directory {DATA_PATH} does not exist.")
+        else:
+            st.write(f"Directory {DATA_PATH} exists.")
+
         lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
                                     'hungry', 'like'])
 
@@ -79,12 +85,17 @@ def lesson_page_1():
 
         for action in lesson1_actions:
             for sequence_index in range(num_sequences):
-                window = []
-                for frame_num in range(sequence_length):
-                    res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
-                    window.append(res)
-                lesson1_sequences.append(window)
-                lesson1_labels.append(lesson1_label_map[action])
+                subdir_path = os.path.join(DATA_PATH, action, str(sequence_index))
+                if not os.path.exists(subdir_path):
+                    st.write(f"Subdirectory {subdir_path} does not exist.")
+                else:
+                    st.write(f"Subdirectory {subdir_path} exists.")
+                    window = []
+                    for frame_num in range(sequence_length):
+                        res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
+                        window.append(res)
+                    lesson1_sequences.append(window)
+                    lesson1_labels.append(lesson1_label_map[action])
 
         def start_video_feed1():
             stop_button_pressed = st.button("Stop camera")
