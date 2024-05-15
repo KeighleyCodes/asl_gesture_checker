@@ -9,6 +9,16 @@ from shared_functions import mediapipe_detection, extract_key_points, display_gi
 
 mp_holistic = mp.solutions.holistic
 
+# Define the path to your Google Drive directory
+google_drive_path = '/content/drive/My Drive'
+
+# List the contents of the Google Drive directory
+files = os.listdir(google_drive_path)
+
+# Display the list of files in Streamlit
+st.write("Files in Google Drive:")
+st.write(files)
+
 
 def lesson_page_4():
     st.title("Lesson 4")
