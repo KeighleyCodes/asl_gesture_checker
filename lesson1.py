@@ -4,20 +4,42 @@ import numpy as np
 import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
-from keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
 
+# Define the base directory and model paths
 base_dir = os.path.dirname(os.path.abspath(__file__))
 model_path_keras = os.path.join(base_dir, 'models', 'lesson1.keras')
 model_path_h5 = os.path.join(base_dir, 'models', 'lesson2.h5')
 
-lesson1_model = load_model(model_path_keras, compile=False)
-lesson2_model = load_model(model_path_h5, compile=False)
+# Debug: Print the base directory and its contents
+st.write(f"Base directory: {base_dir}")
+st.write(f"Files in base directory: {os.listdir(base_dir)}")
+
+# Debug: Print the models directory and its contents
+models_dir = os.path.join(base_dir, 'models')
+st.write(f"Models directory: {models_dir}")
+st.write(f"Files in models directory: {os.listdir(models_dir)}")
+
+# Load models
+try:
+    lesson1_model = load_model(model_path_keras, compile=False)
+    st.write("Loaded lesson1.keras successfully")
+except Exception as e:
+    st.error(f"Error loading the model lesson1.keras: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+
+try:
+    lesson2_model = load_model(model_path_h5, compile=False)
+    st.write("Loaded lesson2.h5 successfully")
+except Exception as e:
+    st.error(f"Error loading the model lesson2.h5: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
 
 
+# Define the lesson page function
 def lesson_page_1():
     st.title("Lesson 1")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
@@ -45,10 +67,9 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-
-        # Load model
+        # Ensure models are loaded before using them
         try:
-            lesson1_model = load_model('lesson1.keras', compile=False)
+            lesson1_model = load_model(model_path_keras, compile=False)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")

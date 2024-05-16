@@ -10,9 +10,6 @@ from shared_functions import mediapipe_detection, extract_key_points, display_gi
 
 mp_holistic = mp.solutions.holistic
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
-model_path_h5 = os.path.join(base_dir, 'models', 'lesson2.h5')
-
 
 def lesson_page_2():
     st.title("Lesson 2")
