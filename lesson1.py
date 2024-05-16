@@ -4,19 +4,18 @@ import numpy as np
 import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
+from keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
 
-import os
+base_dir = os.path.dirname(os.path.abspath(__file__))
+model_path_keras = os.path.join(base_dir, 'models', 'lesson1.keras')
+model_path_h5 = os.path.join(base_dir, 'models', 'lesson2.h5')
 
-st.write("Current working directory:", os.getcwd())
-st.write("Files in current directory:", os.listdir(os.getcwd()))
-
-# Continue with loading the models
-lesson1_model = load_model('lesson1.keras', compile=False)
-lesson2_model = load_model('lesson2.h5', compile=False)
+lesson1_model = load_model(model_path_keras, compile=False)
+lesson2_model = load_model(model_path_h5, compile=False)
 
 
 def lesson_page_1():
