@@ -1,3 +1,4 @@
+import gcsfs
 import streamlit as st
 import cv2
 import numpy as np
@@ -6,7 +7,6 @@ import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
-import gcsfs
 
 mp_holistic = mp.solutions.holistic
 
