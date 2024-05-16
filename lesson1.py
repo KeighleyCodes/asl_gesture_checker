@@ -12,21 +12,18 @@ from shared_functions import mediapipe_detection, extract_key_points, display_gi
 
 mp_holistic = mp.solutions.holistic
 
-# Create a GCS filesystem object
-fs = gcsfs.GCSFileSystem(project='keras-file-storage')
-
 # Specify the path to the model file in the GCS bucket
 model_path = 'gs://keras-files/lesson1.h5'
 
-# Load model
+# Load the model outside the function
 try:
-    # Open the model file from GCS
-    with fs.open(model_path, 'rb') as f:
-        lesson1_model = tf.keras.models.load_model(f)
+    # Load the model directly using tf.keras
+    lesson1_model = tf.keras.models.load_model(model_path)
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
+
 
 def lesson_page_1():
     st.title("Lesson 1")
@@ -55,8 +52,8 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-        # Start camera and perform inference
-        pass  # Placeholder for camera and inference functionality
+        # Sets path for exported data (numpy arrays)
+        DATA_PATH = os.path.join('lesson1')
 
         lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
                                     'hungry', 'like'])
