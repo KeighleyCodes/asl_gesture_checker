@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import os
 import mediapipe as mp
+from keras.src.export.export_lib import TFSMLayer
 from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
@@ -16,16 +17,11 @@ fs = gcsfs.GCSFileSystem(project='keras-file-storage')
 # Specify the path to the model file in the GCS bucket
 model_path = 'gs://keras-files/lesson1.keras'
 
-# Check the file extension to ensure it's supported by Keras 3
-file_extension = os.path.splitext(model_path)[1].lower()
-if file_extension not in ['.keras', '.h5']:
-    raise ValueError(f"The model file '{model_path}' is not in a supported format.")
-
 # Load model
 try:
     # Open the model file from GCS
     with fs.open(model_path, 'rb') as f:
-        lesson1_model = load_model(f)
+        lesson1_model = TFSMLayer(model_uri=model_path, call_endpoint='serving_default')
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
@@ -60,7 +56,6 @@ def lesson_page_1():
     if start_button_pressed:
         # Start camera and perform inference
         pass  # Placeholder for camera and inference functionality
-
 
         lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
                                     'hungry', 'like'])
