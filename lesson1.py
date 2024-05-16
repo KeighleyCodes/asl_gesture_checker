@@ -23,13 +23,14 @@ models_dir = os.path.join(base_dir, 'models')
 st.write(f"Models directory: {models_dir}")
 st.write(f"Files in models directory: {os.listdir(models_dir)}")
 
-# Load models
+# Load models globally
 try:
     lesson1_model = load_model(model_path_keras, compile=False)
     st.write("Loaded lesson1.keras successfully")
 except Exception as e:
     st.error(f"Error loading the model lesson1.keras: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
+    lesson1_model = None
 
 try:
     lesson2_model = load_model(model_path_h5, compile=False)
@@ -37,7 +38,7 @@ try:
 except Exception as e:
     st.error(f"Error loading the model lesson2.h5: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
-
+    lesson2_model = None
 
 # Define the lesson page function
 def lesson_page_1():
@@ -67,12 +68,8 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-        # Ensure models are loaded before using them
-        try:
-            lesson1_model = load_model(model_path_keras, compile=False)
-        except Exception as e:
-            st.error(f"Error loading the model: {e}")
-            st.error(f"Exception traceback: {traceback.format_exc()}")
+        if lesson1_model is None:
+            st.error("Model lesson1.keras is not loaded. Please check the logs for details.")
             st.stop()
 
         # Sets path for exported data (numpy arrays)
