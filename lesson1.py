@@ -7,7 +7,7 @@ from shared_functions import mediapipe_detection, extract_key_points, display_gi
     load_model_from_google_drive
 
 # Google Drive sharing link for the Keras model file for lesson 1
-google_drive_link_lesson1 = 'https://drive.google.com/file/d/106-kLd5BQG8w8PIrrygMfz5LoSjMFA1t/view?usp=drive_link'
+google_drive_link_lesson1 = 'https://drive.google.com/file/d/106-kLd5BQG8w8PIrrygMfz5LoSjMFA1t/view?usp=sharing'
 
 # Load the Keras model directly from Google Drive for lesson 1
 lesson1_model = load_model_from_google_drive(google_drive_link_lesson1)
