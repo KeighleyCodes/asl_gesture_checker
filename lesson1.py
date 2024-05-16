@@ -47,6 +47,15 @@ def lesson_page_1():
             # Specify the path to the model file in the GCS bucket
             model_path = 'gs://keras-files/lesson1.keras'
 
+            # Check the file extension to ensure it's supported by Keras 3
+            file_extension = os.path.splitext(model_path)[1].lower()
+            if file_extension not in ['.keras', '.h5']:
+                raise ValueError(f"The model file '{model_path}' is not in a supported format.")
+
+            # Open the model file from GCS
+            with fs.open(model_path, 'rb') as f:
+                lesson1_model = load_model(f)
+
             # Open the model file from GCS
             with fs.open(model_path, 'rb') as f:
                 lesson1_model = load_model(f)
