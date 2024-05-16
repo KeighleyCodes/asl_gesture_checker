@@ -80,9 +80,10 @@ def display_gif(gif_path, gesture_name):
 #             for chunk in r.iter_content(chunk_size=8192):
 #                 f.write(chunk)
 
-
 def load_model_from_google_drive(google_drive_link):
     file_id = google_drive_link.split('/')[-2]
     download_link = f'https://drive.google.com/uc?export=download&id={file_id}'
     response = requests.get(download_link)
-    return load_model(response.content)
+    with open('model.h5', 'wb') as f:
+        f.write(response.content)
+    return tf.keras.models.load_model('model.h5')
