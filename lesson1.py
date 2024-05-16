@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import os
 import mediapipe as mp
+import tf
 from keras.src.export.export_lib import TFSMLayer
 from tensorflow.keras.models import load_model
 import traceback
@@ -21,7 +22,7 @@ model_path = 'gs://keras-files/lesson1.keras'
 try:
     # Open the model file from GCS
     with fs.open(model_path, 'rb') as f:
-        lesson1_model = TFSMLayer(model_uri=model_path, call_endpoint='serving_default')
+        lesson1_model = tf.keras.models.load_model(f)
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
