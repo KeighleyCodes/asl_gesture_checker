@@ -43,7 +43,7 @@ def lesson_page_2():
 
         # Load model
         try:
-            lesson2_model = load_model('lesson2.keras')
+            lesson2_model = load_model('lesson2.keras', compile=False)
         except Exception as e:
             st.error(f"Error loading the model: {e}")
             st.error(f"Exception traceback: {traceback.format_exc()}")
