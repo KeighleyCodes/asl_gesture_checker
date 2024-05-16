@@ -19,14 +19,10 @@ fs = GCSFileSystem(project='keras-file-storage')
 # Specify the path to the model file in the GCS bucket
 model_path = 'gs://keras-files/lesson1.h5'
 
-# Debugging: Print the list of files in the bucket
-bucket_files = fs.ls('gs://keras-files')
-st.write("Files in bucket:", bucket_files)
-
 # Load the model outside the function
 try:
     # Load the model directly using tf.keras
-    lesson1_model = tf.keras.models.load_model(model_path)
+    lesson1_model = tf.keras.models.load_model(model_path, compile=False)
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
