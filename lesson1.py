@@ -1,13 +1,32 @@
+import gcsfs
 import streamlit as st
 import cv2
 import numpy as np
 import os
 import mediapipe as mp
+import tensorflow as tf
+from gcsfs import GCSFileSystem
+from keras.src.export.export_lib import TFSMLayer
 from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
+
+# Initialize a GCS file system object
+fs = GCSFileSystem(project='keras-file-storage')
+
+# Specify the path to the model file in the GCS bucket
+model_path = 'gs://keras-files/lesson1.h5'
+
+# Load the model outside the function
+try:
+    # Load the model directly using tf.keras
+    lesson1_model = tf.keras.models.load_model(model_path, compile=False)
+except Exception as e:
+    st.error(f"Error loading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
 
 
 def lesson_page_1():
@@ -37,15 +56,6 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-
-        # Load model
-        try:
-            lesson1_model = load_model('lesson1.keras')
-        except Exception as e:
-            st.error(f"Error loading the model: {e}")
-            st.error(f"Exception traceback: {traceback.format_exc()}")
-            st.stop()
-
         # Sets path for exported data (numpy arrays)
         DATA_PATH = os.path.join('lesson1')
 
