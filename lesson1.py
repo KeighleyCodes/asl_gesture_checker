@@ -16,7 +16,7 @@ mp_holistic = mp.solutions.holistic
 fs = gcsfs.GCSFileSystem(project='keras-file-storage')
 
 # Specify the path to the model file in the GCS bucket
-model_path = 'gs://keras-files/lesson1.keras'
+model_path = 'gs://keras-files/lesson1.h5'
 
 # Load model
 try:
