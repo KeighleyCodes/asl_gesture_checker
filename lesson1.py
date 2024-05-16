@@ -10,6 +10,26 @@ from shared_functions import mediapipe_detection, extract_key_points, display_gi
 
 mp_holistic = mp.solutions.holistic
 
+# Create a GCS filesystem object
+fs = gcsfs.GCSFileSystem(project='keras-file-storage')
+
+# Specify the path to the model file in the GCS bucket
+model_path = 'gs://keras-files/lesson1.keras'
+
+# Check the file extension to ensure it's supported by Keras 3
+file_extension = os.path.splitext(model_path)[1].lower()
+if file_extension not in ['.keras', '.h5']:
+    raise ValueError(f"The model file '{model_path}' is not in a supported format.")
+
+# Load model
+try:
+    # Open the model file from GCS
+    with fs.open(model_path, 'rb') as f:
+        lesson1_model = load_model(f)
+except Exception as e:
+    st.error(f"Error loading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
 
 def lesson_page_1():
     st.title("Lesson 1")
@@ -38,33 +58,9 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
+        # Start camera and perform inference
+        pass  # Placeholder for camera and inference functionality
 
-        # Load model
-        try:
-            # Create a GCS filesystem object
-            fs = gcsfs.GCSFileSystem(project='keras-file-storage')
-
-            # Specify the path to the model file in the GCS bucket
-            model_path = 'gs://keras-files/lesson1.keras'
-
-            # Check the file extension to ensure it's supported by Keras 3
-            file_extension = os.path.splitext(model_path)[1].lower()
-            if file_extension not in ['.keras', '.h5']:
-                raise ValueError(f"The model file '{model_path}' is not in a supported format.")
-
-            # Open the model file from GCS
-            with fs.open(model_path, 'rb') as f:
-                lesson1_model = load_model(f)
-
-            # Open the model file from GCS
-            with fs.open(model_path, 'rb') as f:
-                lesson1_model = load_model(f)
-        except Exception as e:
-            st.error(f"Error loading the model: {e}")
-            st.error(f"Exception traceback: {traceback.format_exc()}")
-            st.stop()
-
-        DATA_PATH = os.path.join('lesson1')
 
         lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
                                     'hungry', 'like'])
