@@ -5,12 +5,16 @@ import numpy as np
 import os
 import mediapipe as mp
 import tensorflow as tf
+from gcsfs import GCSFileSystem
 from keras.src.export.export_lib import TFSMLayer
 from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
+
+# Initialize a GCS file system object
+fs = GCSFileSystem(project='keras-file-storage')
 
 # Specify the path to the model file in the GCS bucket
 model_path = 'gs://keras-files/lesson1.h5'
