@@ -1,6 +1,5 @@
 import streamlit as st
 import os
-import tensorflow as tf
 
 def load_file(file_name):
     models_dir = "models"
@@ -35,17 +34,3 @@ def test_page():
     # Check if the file exists
     check_file_exists(file_path)
 
-
-# Function to load and display Keras models
-@st.cache(allow_output_mutation=True)
-def load_model(file_path):
-    model = tf.keras.models.load_model(file_path)
-    return model
-
-# Load the Keras model
-model_path = 'gs://my-keras-models/lesson1.keras'
-model = load_model(model_path)
-
-# Display some information about the model
-st.write("Loaded Keras model summary:")
-st.write(model.summary())

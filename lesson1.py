@@ -2,15 +2,13 @@ import streamlit as st
 import cv2
 import numpy as np
 import os
+import mediapipe as mp
+from tensorflow.keras.models import load_model
 import traceback
-from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes, \
-    load_model_from_google_drive
+from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
+import gcsfs
 
-# Google Drive sharing link for the Keras model file for lesson 1
-google_drive_link_lesson1 = 'https://drive.google.com/file/d/106-kLd5BQG8w8PIrrygMfz5LoSjMFA1t/view?usp=sharing'
-
-# Load the Keras model directly from Google Drive for lesson 1
-lesson1_model = load_model_from_google_drive(google_drive_link_lesson1)
+mp_holistic = mp.solutions.holistic
 
 
 def lesson_page_1():
@@ -40,6 +38,22 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
+
+        # Load model
+        try:
+            # Create a GCS filesystem object
+            fs = gcsfs.GCSFileSystem(project='keras-file-storage')
+
+            # Specify the path to the model file in the GCS bucket
+            model_path = 'gs://keras-files/lesson1.keras'
+
+            # Open the model file from GCS
+            with fs.open(model_path, 'rb') as f:
+                lesson1_model = load_model(f)
+        except Exception as e:
+            st.error(f"Error loading the model: {e}")
+            st.error(f"Exception traceback: {traceback.format_exc()}")
+            st.stop()
 
         DATA_PATH = os.path.join('lesson1')
 
