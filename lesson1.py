@@ -15,8 +15,8 @@ st.write("Current working directory:", os.getcwd())
 st.write("Files in current directory:", os.listdir(os.getcwd()))
 
 # Continue with loading the models
-lesson1_model = load_model(model_path_keras, compile=False)
-lesson2_model = load_model(model_path_h5, compile=False)
+lesson1_model = load_model('lesson1.keras', compile=False)
+lesson2_model = load_model('lesson2.h5', compile=False)
 
 
 def lesson_page_1():
