@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import requests
 import streamlit as st
+from tensorflow.python.keras.models import load_model
 
 
 # Detection function
@@ -72,9 +73,16 @@ def display_gif(gif_path, gesture_name):
 
 
 # Function to download keras files
-def download_file(url, local_filename):
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(local_filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
+# def download_file(url, local_filename):
+#     with requests.get(url, stream=True) as r:
+#         r.raise_for_status()
+#         with open(local_filename, 'wb') as f:
+#             for chunk in r.iter_content(chunk_size=8192):
+#                 f.write(chunk)
+
+
+def load_model_from_google_drive(google_drive_link):
+    file_id = google_drive_link.split('/')[-2]
+    download_link = f'https://drive.google.com/uc?export=download&id={file_id}'
+    response = requests.get(download_link)
+    return load_model(response.content)
