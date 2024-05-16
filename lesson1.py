@@ -11,15 +11,15 @@ mp_holistic = mp.solutions.holistic
 
 # Define the base directory and model paths
 base_dir = os.path.dirname(os.path.abspath(__file__))
-model_path_keras = os.path.join(base_dir, 'models', 'lesson1.keras')
-model_path_h5 = os.path.join(base_dir, 'models', 'lesson2.h5')
+models_dir = os.path.join(base_dir, 'models')
+model_path_keras = os.path.join(models_dir, 'lesson1.keras')
+model_path_h5 = os.path.join(models_dir, 'lesson2.h5')
 
 # Debug: Print the base directory and its contents
 st.write(f"Base directory: {base_dir}")
 st.write(f"Files in base directory: {os.listdir(base_dir)}")
 
 # Debug: Print the models directory and its contents
-models_dir = os.path.join(base_dir, 'models')
 st.write(f"Models directory: {models_dir}")
 st.write(f"Files in models directory: {os.listdir(models_dir)}")
 
