@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import os
 import mediapipe as mp
-import tf
+import tensorflow as tf
 from keras.src.export.export_lib import TFSMLayer
 from tensorflow.keras.models import load_model
 import traceback
