@@ -1,46 +1,34 @@
+import gcsfs
 import streamlit as st
 import cv2
 import numpy as np
 import os
 import mediapipe as mp
+import tensorflow as tf
+from gcsfs import GCSFileSystem
+from keras.src.export.export_lib import TFSMLayer
 from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
 
-# Define the base directory and model paths
-base_dir = os.path.dirname(os.path.abspath(__file__))
-models_dir = os.path.join(base_dir, 'models')
-model_path_keras = os.path.join(models_dir, 'lesson1.keras')
-model_path_h5 = os.path.join(models_dir, 'lesson2.h5')
+# Initialize a GCS file system object
+fs = GCSFileSystem(project='keras-file-storage')
 
-# Debug: Print the base directory and its contents
-st.write(f"Base directory: {base_dir}")
-st.write(f"Files in base directory: {os.listdir(base_dir)}")
+# Specify the path to the model file in the GCS bucket
+model_path = 'gs://keras-files/lesson1.h5'
 
-# Debug: Print the models directory and its contents
-st.write(f"Models directory: {models_dir}")
-st.write(f"Files in models directory: {os.listdir(models_dir)}")
-
-# Load models globally
+# Load the model outside the function
 try:
-    lesson1_model = load_model(model_path_keras, compile=False)
-    st.write("Loaded lesson1.keras successfully")
+    # Load the model directly using tf.keras
+    lesson1_model = tf.keras.models.load_model(model_path, compile=False)
 except Exception as e:
-    st.error(f"Error loading the model lesson1.keras: {e}")
+    st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
-    lesson1_model = None
+    st.stop()
 
-try:
-    lesson2_model = load_model(model_path_h5, compile=False)
-    st.write("Loaded lesson2.h5 successfully")
-except Exception as e:
-    st.error(f"Error loading the model lesson2.h5: {e}")
-    st.error(f"Exception traceback: {traceback.format_exc()}")
-    lesson2_model = None
 
-# Define the lesson page function
 def lesson_page_1():
     st.title("Lesson 1")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
@@ -68,10 +56,6 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-        if lesson1_model is None:
-            st.error("Model lesson1.keras is not loaded. Please check the logs for details.")
-            st.stop()
-
         # Sets path for exported data (numpy arrays)
         DATA_PATH = os.path.join('lesson1')
 
