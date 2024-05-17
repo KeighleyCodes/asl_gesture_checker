@@ -17,7 +17,13 @@ mp_holistic = mp.solutions.holistic
 fs = GCSFileSystem(project='keras-file-storage')
 
 # Specify the path to the model file in the GCS bucket
-model_path = 'gs://keras-files/lesson1.h5'
+model_path = 'gs://keras-files/lesson1.keras'
+local_model_path = 'lesson1.keras'
+
+# Download the model file from GCS to local file system
+with fs.open(model_path, 'rb') as f_in:
+    with open(local_model_path, 'wb') as f_out:
+        f_out.write(f_in.read())
 
 # Load the model outside the function
 try:
