@@ -27,7 +27,6 @@ with fs.open(model_path, 'rb') as f_in:
         f_out.flush()
         f_out.close()
 
-
 # Load the model outside the function
 try:
     # Load the model directly using tf.keras
@@ -36,6 +35,36 @@ except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
+
+# Define the local path for data storage
+LOCAL_DATA_PATH = './local_data/lesson1'
+
+
+# Download data files from GCS to local storage
+def download_data():
+    DATA_PATH = 'gs://keras-files/lesson1'
+    lesson1_actions = np.array(
+        ['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
+    num_sequences = 30
+    sequence_length = 30
+
+    for action in lesson1_actions:
+        for sequence_index in range(num_sequences):
+            for frame_num in range(sequence_length):
+                path_to_load = f"{DATA_PATH}/{action}/{sequence_index}/{frame_num}.npy"
+                local_path_to_save = f"{LOCAL_DATA_PATH}/{action}/{sequence_index}/{frame_num}.npy"
+
+                os.makedirs(os.path.dirname(local_path_to_save), exist_ok=True)
+
+                with fs.open(path_to_load, 'rb') as f_in:
+                    with open(local_path_to_save, 'wb') as f_out:
+                        f_out.write(f_in.read())
+                        f_out.flush()
+                        f_out.close()
+
+
+# Call this function to download the data at the start
+download_data()
 
 
 def lesson_page_1():
@@ -66,45 +95,24 @@ def lesson_page_1():
 
     if start_button_pressed:
         # Sets path for exported data (numpy arrays)
-        DATA_PATH = os.path.join('lesson1')
-        local_data_path = 'lesson1'
+        LOCAL_DATA_PATH = './local_data/lesson1'
 
         lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
                                     'hungry', 'like'])
 
         num_sequences = 30
-
         sequence_length = 30
-
         lesson1_label_map = {label: num for num, label in enumerate(lesson1_actions)}
 
         lesson1_sequences, lesson1_labels = [], []
 
-        # Ensure local directories exist
-        os.makedirs(local_data_path, exist_ok=True)
-
         for action in lesson1_actions:
-            os.makedirs(os.path.join(local_data_path, action), exist_ok=True)
-
             for sequence_index in range(num_sequences):
-                os.makedirs(os.path.join(local_data_path, action, str(sequence_index)), exist_ok=True)
-
                 window = []
-
                 for frame_num in range(sequence_length):
-                    os.makedirs(os.path.join(local_data_path, action, str(sequence_index)), exist_ok=True)
+                    local_path_to_load = f"{LOCAL_DATA_PATH}/{action}/{sequence_index}/{frame_num}.npy"
 
-                    path_to_load = os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num))
-                    local_path_to_load = os.path.join(local_data_path, action, str(sequence_index), f"{frame_num}.npy")
-
-                    with fs.open(path_to_load, 'rb') as f_in:
-                        with open(local_path_to_load, 'wb') as f_out:
-                            f_out.write(f_in.read())
-                            f_out.flush()
-                            f_out.close()
-
-                    res = np.load(path_to_load)
-                    st.write(path_to_load)
+                    res = np.load
 
                     window.append(res)
 
