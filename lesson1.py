@@ -34,6 +34,47 @@ except Exception as e:
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
+def start_video_feed():
+    capture = cv2.VideoCapture(0)
+    sequence = []
+    sentence = []
+    threshold = 0.4
+
+    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+        while capture.isOpened():
+            ret, frame = capture.read()
+            image, results = mediapipe_detection(frame, holistic)
+            key_points = extract_key_points(results)
+            sequence.append(key_points)
+            sequence = sequence[-30:]
+
+            if len(sequence) == 30:
+                try:
+                    results = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
+                    predicted_action_index = np.argmax(results)
+                    if results[predicted_action_index] > threshold:
+                        sentence.append(lesson1_actions[predicted_action_index])
+                except Exception as e:
+                    st.error(f"Error during prediction: {e}")
+
+            if len(sentence) > 5:
+                sentence = sentence[-5:]
+
+            if len(sentence) > 0:
+                cv2.putText(image, sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            st.image(image_rgb, channels="RGB", use_column_width=True)
+
+            if not ret:
+                st.write("The video capture has ended.")
+                break
+
+st.title("Gesture Recognition")
+start_button_pressed = st.button("Start Camera")
+
+if start_button_pressed:
+    start_video_feed()
 
 def lesson_page_1():
     st.title("Lesson 1")
