@@ -25,10 +25,11 @@ with fs.open(model_path, 'rb') as f_in:
     with open(local_model_path, 'wb') as f_out:
         f_out.write(f_in.read())
 
+
 # Load the model outside the function
 try:
     # Load the model directly using tf.keras
-    lesson1_model = tf.keras.models.load_model(model_path, compile=False)
+    lesson1_model = tf.keras.models.load_model(local_model_path, compile=False)
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
