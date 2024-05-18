@@ -1,4 +1,3 @@
-import gcsfs
 import streamlit as st
 import cv2
 import numpy as np
@@ -6,7 +5,6 @@ import os
 import mediapipe as mp
 import tensorflow as tf
 from gcsfs import GCSFileSystem
-from keras.src.export.export_lib import TFSMLayer
 from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
@@ -35,6 +33,7 @@ except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
+
 
 def lesson_page_1():
     st.title("Lesson 1")

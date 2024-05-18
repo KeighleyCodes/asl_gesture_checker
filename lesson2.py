@@ -3,10 +3,9 @@ import cv2
 import numpy as np
 import os
 import mediapipe as mp
-from gcsfs import GCSFileSystem
 import tensorflow as tf
-
-from keras.models import load_model
+from gcsfs import GCSFileSystem
+from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
