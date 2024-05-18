@@ -100,6 +100,8 @@ def lesson_page_1():
                     with fs.open(path_to_load, 'rb') as f_in:
                         with open(local_path_to_load, 'wb') as f_out:
                             f_out.write(f_in.read())
+                            f_out.flush()
+                            f_out.close()
 
                     res = np.load(path_to_load)
                     st.write(path_to_load)
