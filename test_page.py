@@ -13,9 +13,11 @@ model_path = 'gs://keras-files/lesson1.keras'
 local_model_path = 'lesson1.keras'
 
 # Download the model file from GCS to local file system
-with fs.open(model_path, 'r') as f_in:
-    with open(local_model_path, 'w') as f_out:
+with fs.open(model_path, 'rb') as f_in:
+    with open(local_model_path, 'wb') as f_out:
         f_out.write(f_in.read())
+        f_out.flush()
+        f_out.close()
 
 
 def load_file(local_model_path):
