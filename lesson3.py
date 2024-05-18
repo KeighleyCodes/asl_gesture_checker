@@ -17,6 +17,8 @@ except Exception as e:
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
+# Define actions
+lesson3_actions = np.array(['name', 'need', 'now', 'please', 'sad', 'school', 'slow', 'sorry', 'wait', 'want'])
 
 # Function to start the video feed
 def start_video_feed3(model):
