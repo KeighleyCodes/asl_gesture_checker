@@ -1,64 +1,89 @@
 import streamlit as st
-import os
-import tensorflow as tf
-import traceback
+import cv2
+import numpy as np
+import mediapipe as mp
+from tensorflow.keras.models import load_model
+from shared_functions import mediapipe_detection, extract_key_points
 
-from gcsfs import GCSFileSystem
+mp_holistic = mp.solutions.holistic
 
-# Initialize a GCS file system object
-fs = GCSFileSystem(project='keras-file-storage')
+# Load the pre-trained model
+lesson1_model = load_model('lesson1.keras', compile=False)
 
-# Specify the path to the model file in the GCS bucket
-model_path = 'gs://keras-files/lesson1.keras'
-local_model_path = 'lesson1.keras'
+lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
+                                    'hungry', 'like'])
 
-# Download the model file from GCS to local file system
-with fs.open(model_path, 'rb') as f_in:
-    with open(local_model_path, 'wb') as f_out:
-        f_out.write(f_in.read())
-        f_out.flush()
-        f_out.close()
+def start_video_feed():
 
+    sequence = []
+    sentence = []
+    predictions = []
+    threshold = 0.4
 
-def load_file(local_model_path):
-    # models_dir = "models"
-    # file_path = os.path.join(os.path.dirname(__file__), models_dir, file_name)
-    # try:
-    #     with open(file_path, "r") as file:
-    #         file_contents = file.read()
-    #     st.write("File Contents:")
-    #     st.write(file_contents)
-    # except FileNotFoundError:
-    #     st.error(f"File not found: {file_path}")
+    # Accesses mediapipe model
+    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
 
-    # Load the model outside the function
-    try:
-        # Load the model directly using tf.keras
-        lesson1_model = tf.keras.models.load_model(local_model_path, compile=False)
-    except Exception as e:
-        st.error(f"Error loading the model: {e}")
-        st.error(f"Exception traceback: {traceback.format_exc()}")
-        st.stop()
+        # Open the camera feed
+        capture = cv2.VideoCapture(0)
 
+        # While the camera is opened
+        while capture.isOpened():
+            # Read feed
+            ret, frame = capture.read()
 
-def check_file_exists(file_path):
-    if os.path.isfile(file_path):
-        st.success(f"File found: {file_path}")
-    else:
-        st.error(f"File not found: {file_path}")
+            # Make detections
+            image, results = mediapipe_detection(frame, holistic)
 
+            # Extract keypoints from video
+            keypoints = extract_key_points(results)
 
-def test_page():
-    st.title("Test Page")
-    st.write("Click the button below to load a file from the 'models' directory:")
-    if st.button("Load File"):
-        load_file(local_model_path)
-        st.write("Done")
+            # Append keypoints to sequence list
+            sequence.append(keypoints)
 
-    st.title("File Existence Checker")
+            # Keep only the last 30 frames to generate a prediction
+            sequence = sequence[-30:]
 
-    # Check if the file exists
-    check_file_exists(local_model_path)
+            # Run prediction only if the length of sequence equals 30
+            if len(sequence) == 30:
+                try:
+                    res = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
+                    predicted_action_index = np.argmax(res)
+                    predictions.append(predicted_action_index)
 
+                    # If result is above threshold
+                    if res[predicted_action_index] > threshold:
+                        sentence.append(lesson1_actions[predicted_action_index])
 
+                except Exception as e:
+                    st.error(f"Error during prediction: {e}")
 
+            # If the sentence length is greater than 5
+            if len(sentence) > 5:
+                # Grab the last five values
+                sentence = sentence[-5:]
+
+            # Display the last recognized action on the frame
+            if len(sentence) > 0:
+                cv2.putText(image, sentence[-1], (3, 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+
+            # Display the frame with predictions overlaid using Streamlit
+            st.image(image, channels="BGR", use_column_width=True)
+
+            # Check if 'q' is pressed to exit
+            if cv2.waitKey(10) & 0xFF == ord('q'):
+                break
+
+        # Release the camera feed and close all windows
+        capture.release()
+        cv2.destroyAllWindows()
+
+# Streamlit app title
+st.title("Gesture Recognition")
+
+# Button to start the camera feed
+start_button_pressed = st.button("Start Camera")
+
+# Start camera feed when button is pressed
+if start_button_pressed:
+    start_video_feed()
