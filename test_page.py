@@ -1,5 +1,32 @@
 import streamlit as st
 import os
+import tensorflow as tf
+import traceback
+
+from gcsfs import GCSFileSystem
+
+# Initialize a GCS file system object
+fs = GCSFileSystem(project='keras-file-storage')
+
+# Specify the path to the model file in the GCS bucket
+model_path = 'gs://keras-files/lesson1.keras'
+local_model_path = 'lesson1.keras'
+
+# Download the model file from GCS to local file system
+with fs.open(model_path, 'rb') as f_in:
+    with open(local_model_path, 'wb') as f_out:
+        f_out.write(f_in.read())
+
+
+# Load the model outside the function
+try:
+    # Load the model directly using tf.keras
+    lesson1_model = tf.keras.models.load_model(local_model_path, compile=False)
+except Exception as e:
+    st.error(f"Error loading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
+
 
 def load_file(file_name):
     models_dir = "models"
@@ -28,9 +55,7 @@ def test_page():
 
     st.title("File Existence Checker")
 
-    # Define the file path to check
-    file_path = "lesson1.keras"
-
     # Check if the file exists
-    check_file_exists(file_path)
+    check_file_exists(local_model_path)
+
 
