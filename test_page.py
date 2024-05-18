@@ -18,26 +18,25 @@ with fs.open(model_path, 'rb') as f_in:
         f_out.write(f_in.read())
 
 
-# Load the model outside the function
-try:
-    # Load the model directly using tf.keras
-    lesson1_model = tf.keras.models.load_model(local_model_path, compile=False)
-except Exception as e:
-    st.error(f"Error loading the model: {e}")
-    st.error(f"Exception traceback: {traceback.format_exc()}")
-    st.stop()
+def load_file(local_model_path):
+    # models_dir = "models"
+    # file_path = os.path.join(os.path.dirname(__file__), models_dir, file_name)
+    # try:
+    #     with open(file_path, "r") as file:
+    #         file_contents = file.read()
+    #     st.write("File Contents:")
+    #     st.write(file_contents)
+    # except FileNotFoundError:
+    #     st.error(f"File not found: {file_path}")
 
-
-def load_file(file_name):
-    models_dir = "models"
-    file_path = os.path.join(os.path.dirname(__file__), models_dir, file_name)
+    # Load the model outside the function
     try:
-        with open(file_path, "r") as file:
-            file_contents = file.read()
-        st.write("File Contents:")
-        st.write(file_contents)
-    except FileNotFoundError:
-        st.error(f"File not found: {file_path}")
+        # Load the model directly using tf.keras
+        lesson1_model = tf.keras.models.load_model(local_model_path, compile=False)
+    except Exception as e:
+        st.error(f"Error loading the model: {e}")
+        st.error(f"Exception traceback: {traceback.format_exc()}")
+        st.stop()
 
 
 def check_file_exists(file_path):
@@ -51,11 +50,12 @@ def test_page():
     st.title("Test Page")
     st.write("Click the button below to load a file from the 'models' directory:")
     if st.button("Load File"):
-        load_file("example.txt")
+        load_file(local_model_path)
 
     st.title("File Existence Checker")
 
     # Check if the file exists
     check_file_exists(local_model_path)
+    st.write("Done")
 
 
