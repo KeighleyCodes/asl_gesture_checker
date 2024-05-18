@@ -20,6 +20,7 @@ except Exception as e:
 # Define actions
 lesson3_actions = np.array(['name', 'need', 'now', 'please', 'sad', 'school', 'slow', 'sorry', 'wait', 'want'])
 
+
 # Function to start the video feed
 def start_video_feed3(model):
     # Button to stop the video feed
