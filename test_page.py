@@ -51,11 +51,12 @@ def test_page():
     st.write("Click the button below to load a file from the 'models' directory:")
     if st.button("Load File"):
         load_file(local_model_path)
+        st.write("Done")
 
     st.title("File Existence Checker")
 
     # Check if the file exists
     check_file_exists(local_model_path)
-    st.write("Done")
+
 
 
