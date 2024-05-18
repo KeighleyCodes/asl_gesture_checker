@@ -78,9 +78,6 @@ def start_video_feed():
         capture.release()
         cv2.destroyAllWindows()
 
-# Streamlit app title
-st.title("Gesture Recognition")
-
 # Button to start the camera feed
 start_button_pressed = st.button("Start Camera")
 

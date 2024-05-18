@@ -3,7 +3,7 @@ from lesson1 import lesson_page_1
 from lesson2 import lesson_page_2
 from lesson3 import lesson_page_3
 from lesson4 import lesson_page_4
-from test_page import test_page
+from test_page import start_video_feed
 
 
 def information_page():
@@ -40,7 +40,7 @@ def main():
     elif lesson == "Lesson 4":
         lesson_page_4()
     elif lesson == "FOR TESTING":
-        test_page()
+        start_video_feed()
 
 
 if __name__ == "__main__":
