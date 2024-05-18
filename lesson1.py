@@ -67,6 +67,7 @@ def lesson_page_1():
     if start_button_pressed:
         # Sets path for exported data (numpy arrays)
         DATA_PATH = os.path.join('lesson1')
+        local_data_path = 'lesson1'
 
         lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
                                     'hungry', 'like'])
@@ -79,15 +80,27 @@ def lesson_page_1():
 
         lesson1_sequences, lesson1_labels = [], []
 
+        # Ensure local directories exist
+        os.makedirs(local_data_path, exist_ok=True)
+
         for action in lesson1_actions:
+            os.makedirs(os.path.join(local_data_path, action), exist_ok=True)
 
             for sequence_index in range(num_sequences):
+                os.makedirs(os.path.join(local_data_path, action, str(sequence_index)), exist_ok=True)
 
                 window = []
 
                 for frame_num in range(sequence_length):
+                    os.makedirs(os.path.join(local_data_path, action, str(sequence_index)), exist_ok=True)
 
                     path_to_load = os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num))
+                    local_path_to_load = os.path.join(local_data_path, action, str(sequence_index), f"{frame_num}.npy")
+
+                    with fs.open(path_to_load, 'rb') as f_in:
+                        with open(local_path_to_load, 'wb') as f_out:
+                            f_out.write(f_in.read())
+
                     res = np.load(path_to_load)
                     st.write(path_to_load)
 
