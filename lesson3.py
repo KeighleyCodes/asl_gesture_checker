@@ -1,7 +1,6 @@
 import streamlit as st
 import cv2
 import numpy as np
-import os
 import mediapipe as mp
 from tensorflow.keras.models import load_model
 import traceback
@@ -45,11 +44,14 @@ def start_video_feed3(model):
 
     # Initial detection confidence & tracking confidence set
     with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-
         # While the camera is opened
         while capture.isOpened():
             # Reads feed
             ret, frame = capture.read()
+
+            if not ret:
+                st.write("The video capture has ended or failed.")
+                break
 
             # Make detections
             image, results = mediapipe_detection(frame, holistic)
@@ -89,11 +91,6 @@ def start_video_feed3(model):
             # Display the frame with predictions overlaid using Streamlit
             frame_placeholder.image(image_rgb, channels="RGB")
 
-            # Check if frame was successfully read
-            if not ret:
-                st.write("The video capture has ended.")
-                break
-
             # Check if the stop button is pressed
             if stop_button_pressed:
                 break
@@ -106,7 +103,7 @@ def lesson_page_3():
     st.title("Lesson 3")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
              "ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
-    st.write(" In this lesson, we will practice the following gestures:")
+    st.write("In this lesson, we will practice the following gestures:")
 
     # Define a dictionary mapping gesture names to GIF paths
     gesture_gifs = {
@@ -134,5 +131,3 @@ def lesson_page_3():
     if start_button_pressed:
         # Start the video feed
         start_video_feed3(lesson3_model)
-
-
