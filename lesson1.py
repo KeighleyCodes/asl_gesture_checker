@@ -36,37 +36,6 @@ except Exception as e:
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
-# Define the local path for data storage
-LOCAL_DATA_PATH = './local_data/lesson1'
-
-
-# Download data files from GCS to local storage
-def download_data():
-    DATA_PATH = 'gs://keras-files/lesson1'
-    lesson1_actions = np.array(
-        ['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
-    num_sequences = 30
-    sequence_length = 30
-
-    for action in lesson1_actions:
-        for sequence_index in range(num_sequences):
-            for frame_num in range(sequence_length):
-                path_to_load = f"{DATA_PATH}/{action}/{sequence_index}/{frame_num}.npy"
-                local_path_to_save = f"{LOCAL_DATA_PATH}/{action}/{sequence_index}/{frame_num}.npy"
-
-                os.makedirs(os.path.dirname(local_path_to_save), exist_ok=True)
-
-                with fs.open(path_to_load, 'rb') as f_in:
-                    with open(local_path_to_save, 'wb') as f_out:
-                        f_out.write(f_in.read())
-                        f_out.flush()
-                        f_out.close()
-
-
-# Call this function to download the data at the start
-download_data()
-
-
 def lesson_page_1():
     st.title("Lesson 1")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
@@ -94,26 +63,40 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
+
+        # Load model
+        try:
+            lesson1_model = load_model('lesson1.keras', compile=False)
+        except Exception as e:
+            st.error(f"Error loading the model: {e}")
+            st.error(f"Exception traceback: {traceback.format_exc()}")
+            st.stop()
+
         # Sets path for exported data (numpy arrays)
-        LOCAL_DATA_PATH = './local_data/lesson1'
+        DATA_PATH = os.path.join('lesson2')
 
         lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
                                     'hungry', 'like'])
 
         num_sequences = 30
+
         sequence_length = 30
+
         lesson1_label_map = {label: num for num, label in enumerate(lesson1_actions)}
 
         lesson1_sequences, lesson1_labels = [], []
 
         for action in lesson1_actions:
+
             for sequence_index in range(num_sequences):
+
                 window = []
+
                 for frame_num in range(sequence_length):
-                    local_path_to_load = f"{LOCAL_DATA_PATH}/{action}/{sequence_index}/{frame_num}.npy"
+                    # Loads frame
+                    res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
 
-                    res = np.load
-
+                    # Add frames to window
                     window.append(res)
 
                 lesson1_sequences.append(window)

@@ -23,12 +23,13 @@ local_model_path = 'lesson2.h5'
 with fs.open(model_path, 'rb') as f_in:
     with open(local_model_path, 'wb') as f_out:
         f_out.write(f_in.read())
-
+        f_out.flush()
+        f_out.close()
 
 # Load the model outside the function
 try:
     # Load the model directly using tf.keras
-    lesson1_model = tf.keras.models.load_model(local_model_path, compile=False)
+    lesson2_model = tf.keras.models.load_model(local_model_path, compile=False)
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
