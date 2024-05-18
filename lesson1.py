@@ -85,7 +85,9 @@ def lesson_page_1():
 
                 for frame_num in range(sequence_length):
 
-                    res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
+                    path_to_load = os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num))
+                    res = np.load(path_to_load)
+                    st.write(path_to_load)
 
                     window.append(res)
 
