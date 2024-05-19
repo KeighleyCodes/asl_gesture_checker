@@ -110,5 +110,3 @@ def lesson_page_1():
         async_processing=True,
     )
 
-if __name__ == "__main__":
-    lesson_page_1()
