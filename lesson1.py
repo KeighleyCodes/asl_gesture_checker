@@ -8,9 +8,6 @@ import traceback
 from gcsfs import GCSFileSystem
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
-from PIL import Image
-import io
-import base64
 
 mp_holistic = mp.solutions.holistic
 
@@ -41,67 +38,42 @@ except Exception as e:
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
-
-# Convert image to base64 string
-def image_to_base64(image):
-    img = Image.fromarray(image)
-    buffered = io.BytesIO()
-    img.save(buffered, format="PNG")
-    return base64.b64encode(buffered.getvalue()).decode("utf-8")
-
-
 class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.model = lesson1_model
-        self.actions = np.array(
-            ['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
+        self.actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
         self.sequence = []
         self.sentence = []
         self.threshold = 0.4
         self.mp_holistic = mp.solutions.holistic
 
-    class VideoProcessor(VideoProcessorBase):
-        def __init__(self):
-            self.model = lesson1_model
-            self.actions = np.array(
-                ['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
-            self.sequence = []
-            self.sentence = []
-            self.threshold = 0.4
-            self.mp_holistic = mp.solutions.holistic
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")
 
-        def recv(self, frame):
-            if frame is None:
-                return None
+        # Mediapipe processing
+        with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+            image, results = mediapipe_detection(img, holistic)
+            keypoints = extract_key_points(results)
+            self.sequence.append(keypoints)
+            self.sequence = self.sequence[-30:]
 
-            img = frame.to_ndarray(format="bgr24")
+            if len(self.sequence) == 30:
+                res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]
+                predicted_action_index = np.argmax(res)
+                if res[predicted_action_index] > self.threshold:
+                    self.sentence.append(self.actions[predicted_action_index])
 
-            # Mediapipe processing
-            with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-                image, results = mediapipe_detection(img, holistic)
-                keypoints = extract_key_points(results)
-                self.sequence.append(keypoints)
-                self.sequence = self.sequence[-30:]
+            if len(self.sentence) > 5:
+                self.sentence = self.sentence[-5:]
 
-                if len(self.sequence) == 30:
-                    res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]
-                    predicted_action_index = np.argmax(res)
-                    if res[predicted_action_index] > self.threshold:
-                        self.sentence.append(self.actions[predicted_action_index])
+            if len(self.sentence) > 0:
+                cv2.putText(image, self.sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
-                if len(self.sentence) > 5:
-                    self.sentence = self.sentence[-5:]
-
-                if len(self.sentence) > 0:
-                    cv2.putText(image, self.sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-
-            return image
-
+        return av.VideoFrame.from_ndarray(image, format="bgr24")
 
 RTC_CONFIGURATION = RTCConfiguration({
     "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
 })
-
 
 def lesson_page_1():
     st.title("Lesson 1")
@@ -138,23 +110,3 @@ def lesson_page_1():
         },
         async_processing=True,
     )
-
-    st.write("Video Stream:")
-    if webrtc_ctx and webrtc_ctx.video_processor:
-        received_frame = webrtc_ctx.video_processor.recv(None)
-        if received_frame is not None:
-            st.image(
-                received_frame,
-                use_column_width=True,
-                channels="BGR",
-                output_format="BGR",
-                caption="Live Video Stream"
-            )
-            st.markdown(
-                "<div style='border: 2px solid black; padding: 10px'><img src='data:image/png;base64,{}'></div>".format(
-                    image_to_base64(received_frame.to_ndarray(format="bgr24"))
-                ),
-                unsafe_allow_html=True
-            )
-        else:
-            st.write("Waiting for video input...")
