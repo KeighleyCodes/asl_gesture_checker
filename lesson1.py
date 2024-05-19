@@ -86,14 +86,12 @@ class VideoTransformerWithTextOverlay(VideoTransformerBase):
 
         # Draw text overlay
         if len(self.sentence) > 0:
-            image = self.draw_text_overlay(image, self.sentence[-1])
+            # Combine the last 5 predictions into a single string
+            prediction_text = ' '.join(self.sentence[-5:])
+            # Print the predictions to a subheader
+            st.subheader(prediction_text)
 
         return image
-
-    def draw_text_overlay(self, image, text):
-        cv2.putText(image, text, (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-        return image
-
 
 # Create an instance of the VideoTransformerWithTextOverlay class
 video_transformer = VideoTransformerWithTextOverlay()
