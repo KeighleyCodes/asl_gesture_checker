@@ -1,14 +1,10 @@
-import gcsfs
 import streamlit as st
 import cv2
 import numpy as np
-import os
 import mediapipe as mp
 import tensorflow as tf
-from gcsfs import GCSFileSystem
-from keras.src.export.export_lib import TFSMLayer
-from tensorflow.keras.models import load_model
 import traceback
+from gcsfs import GCSFileSystem
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
@@ -21,26 +17,30 @@ model_path = 'gs://keras-files/lesson1.keras'
 local_model_path = 'lesson1.keras'
 
 # Download the model file from GCS to local file system
-with fs.open(model_path, 'rb') as f_in:
-    with open(local_model_path, 'wb') as f_out:
-        f_out.write(f_in.read())
-
+try:
+    with fs.open(model_path, 'rb') as f_in:
+        with open(local_model_path, 'wb') as f_out:
+            f_out.write(f_in.read())
+    st.write("Model downloaded successfully.")  # Debug statement
+except Exception as e:
+    st.error(f"Error downloading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
 
 # Load the model outside the function
 try:
-    # Load the model directly using tf.keras
     lesson1_model = tf.keras.models.load_model(local_model_path, compile=False)
+    st.write("Model loaded successfully.")  # Debug statement
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
-
 def lesson_page_1():
     st.title("Lesson 1")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
              "ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
-    st.write(" In this lesson, we will practice the following gestures:")
+    st.write("In this lesson, we will practice the following gestures:")
 
     gesture_gifs = {
         "again": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWk0ZW1scnI5eHFoMWQ5ZWJiazJuNWQ5OWFtOTRndWo1bHUxdHpyeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XSvXpnvUizxUP09NaQ/giphy.gif",
@@ -63,99 +63,50 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-        # Sets path for exported data (numpy arrays)
-        DATA_PATH = os.path.join('lesson1')
+        start_video_feed1()
 
-        lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
-                                    'hungry', 'like'])
+def start_video_feed1():
+    lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
 
-        num_sequences = 30
+    sequence = []
+    sentence = []
+    predictions = []
+    threshold = 0.4
 
-        sequence_length = 30
+    capture = cv2.VideoCapture(0)
 
-        lesson1_label_map = {label: num for num, label in enumerate(lesson1_actions)}
+    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+        while capture.isOpened():
+            ret, frame = capture.read()
+            if not ret:
+                st.error("Failed to capture video feed.")
+                break
 
-        lesson1_sequences, lesson1_labels = [], []
+            image, results = mediapipe_detection(frame, holistic)
+            key_points = extract_key_points(results)
+            sequence.append(key_points)
+            sequence = sequence[-30:]
 
-        for action in lesson1_actions:
+            if len(sequence) == 30:
+                res = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
+                predicted_action_index = np.argmax(res)
+                predictions.append(predicted_action_index)
 
-            for sequence_index in range(num_sequences):
+                if res[predicted_action_index] > threshold:
+                    sentence.append(lesson1_actions[predicted_action_index])
 
-                window = []
+            if len(sentence) > 5:
+                sentence = sentence[-5:]
 
-                for frame_num in range(sequence_length):
-
-                    path_to_load = os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num))
-                    res = np.load(path_to_load)
-                    st.write(path_to_load)
-
-                    window.append(res)
-
-                lesson1_sequences.append(window)
-
-                lesson1_labels.append(lesson1_label_map[action])
-
-        def start_video_feed1():
-
-            stop_button_pressed = st.button("Stop camera")
-
-            sequence = []
-
-            sentence = []
-
-            predictions = []
-
-            threshold = 0.4
-
-            capture = cv2.VideoCapture(0)
+            if len(sentence) > 0:
+                cv2.putText(image, sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
             frame_placeholder = st.empty()
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            frame_placeholder.image(image_rgb, channels="RGB")
 
-            with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+            if st.button("Stop camera"):
+                break
 
-                while capture.isOpened():
-
-                    ret, frame = capture.read()
-
-                    image, results = mediapipe_detection(frame, holistic)
-
-                    key_points = extract_key_points(results)
-
-                    sequence.append(key_points)
-
-                    sequence = sequence[-30:]
-
-                    if len(sequence) == 30:
-                        try:
-                            results = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
-                            predicted_action_index = np.argmax(results)
-                            predictions.append(predicted_action_index)
-
-                            if results[predicted_action_index] > threshold:
-                                sentence.append(lesson1_actions[predicted_action_index])
-                        except Exception as e:
-                            st.error(f"Error during prediction: {e}")
-                            st.error(f"Exception traceback: {traceback.format_exc()}")
-
-                    if len(sentence) > 5:
-                        sentence = sentence[-5:]
-
-                    if len(sentence) > 0:
-                        cv2.putText(image, sentence[-1], (3, 30),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-
-                    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-                    frame_placeholder.image(image_rgb, channels="RGB")
-
-                    if not ret:
-                        st.write("The video capture has ended.")
-                        break
-
-                    if stop_button_pressed:
-                        break
-
-            capture.release()
-            cv2.destroyAllWindows()
-
-        start_video_feed1()
+    capture.release()
+    cv2.destroyAllWindows()

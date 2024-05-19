@@ -7,27 +7,16 @@ from test_page import test_page
 
 
 def information_page():
-
     st.title("Hands On Learning")
-    st.write("Welcome to Hands on Learning's virtual lesson practice. Please select a lesson from the left "
-             "section of the page. You will be able to use your webcam to practice your ASL gestures for each "
-             "of the lessons.")
-
-    st.write("The program will start predicting gestures as soon as the video feed begins, analyzing each frame for "
-             "possible gestures. Take your time and try the gestures multiple times for accurate feedback.")
+    st.write("Welcome to Hands on Learning's virtual lesson practice. Please select a lesson from the left section of the page. You will be able to use your webcam to practice your ASL gestures for each of the lessons.")
+    st.write("The program will start predicting gestures as soon as the video feed begins, analyzing each frame for possible gestures. Take your time and try the gestures multiple times for accurate feedback.")
 
 
 def main():
-    # Clear the page
     st.empty()
-
-    # Sidebar title
     st.sidebar.title("Hands On Learning")
 
-    # Sidebar lesson selector box
-
-    lesson = st.sidebar.selectbox("Select Lesson", ["Home", "Lesson 1", "Lesson 2", "Lesson 3", "Lesson 4",
-                                                    "FOR TESTING"])
+    lesson = st.sidebar.selectbox("Select Lesson", ["Home", "Lesson 1", "Lesson 2", "Lesson 3", "Lesson 4", "FOR TESTING"])
 
     if lesson == "Home":
         information_page()
