@@ -8,3 +8,4 @@ pandas==2.2.2
 keras==3.2.1
 gcsfs
 st-files-connection
+streamlit-webrtc
