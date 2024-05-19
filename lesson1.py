@@ -1,4 +1,3 @@
-import av
 import streamlit as st
 import cv2
 import numpy as np
@@ -38,10 +37,12 @@ except Exception as e:
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
+
 class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.model = lesson1_model
-        self.actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
+        self.actions = np.array(
+            ['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
         self.sequence = []
         self.sentence = []
         self.threshold = 0.4
@@ -69,11 +70,13 @@ class VideoProcessor(VideoProcessorBase):
             if len(self.sentence) > 0:
                 cv2.putText(image, self.sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
-        return av.VideoFrame.from_ndarray(image, format="bgr24")
+        return image
+
 
 RTC_CONFIGURATION = RTCConfiguration({
     "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
 })
+
 
 def lesson_page_1():
     st.title("Lesson 1")
@@ -110,3 +113,6 @@ def lesson_page_1():
         },
         async_processing=True,
     )
+
+    if webrtc_ctx.video_processor:
+        st.image(webrtc_ctx.video_processor.frame_out.to_ndarray(format="bgr24"), channels="BGR", use_column_width=True)
