@@ -8,6 +8,9 @@ import traceback
 from gcsfs import GCSFileSystem
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
+from PIL import Image
+import io
+import base64
 
 mp_holistic = mp.solutions.holistic
 
@@ -37,6 +40,14 @@ except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
+
+
+# Convert image to base64 string
+def image_to_base64(image):
+    img = Image.fromarray(image)
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
 class VideoProcessor(VideoProcessorBase):
