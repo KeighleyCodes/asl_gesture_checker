@@ -20,8 +20,7 @@ def main():
     st.sidebar.title("Hands On Learning")
 
     # Sidebar lesson selector box
-    lesson = st.sidebar.selectbox("Select Lesson", ["Home", "Lesson 1", "Lesson 2", "Lesson 3", "Lesson 4",
-                                                    "FOR TESTING"])
+    lesson = st.sidebar.selectbox("Select Lesson", ["Home", "Lesson 1", "Lesson 2", "Lesson 3", "Lesson 4",])
 
     if lesson == "Home":
         information_page()
