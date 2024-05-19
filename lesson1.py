@@ -131,20 +131,19 @@ def lesson_page_1():
     st.write("Video Stream:")
     if webrtc_ctx and webrtc_ctx.video_processor:
         received_frame = webrtc_ctx.video_processor.recv(None)
-        if received_frame:
+        if received_frame is not None:
             st.image(
-                received_frame.to_ndarray(format="bgr24"),
+                received_frame,
                 use_column_width=True,
                 channels="BGR",
                 output_format="BGR",
                 caption="Live Video Stream"
             )
             st.markdown(
-                "<div style='border: 2px solid black; padding: 10px'>" + received_frame.to_ndarray(
-                    format="bgr24") + "</div>",
+                "<div style='border: 2px solid black; padding: 10px'><img src='data:image/png;base64,{}'></div>".format(
+                    image_to_base64(received_frame.to_ndarray(format="bgr24"))
+                ),
                 unsafe_allow_html=True
             )
         else:
-            st.write("Waiting for video stream...")
-    else:
-        st.write("WebRTC context not initialized.")
+            st.write("Waiting for video input...")
