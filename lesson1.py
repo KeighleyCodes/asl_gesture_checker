@@ -114,5 +114,20 @@ def lesson_page_1():
         async_processing=True,
     )
 
-    if webrtc_ctx.video_processor:
-        st.image(webrtc_ctx.video_processor.frame_out.to_ndarray(format="bgr24"), channels="BGR", use_column_width=True)
+    st.write("Video Stream:")
+    received_frame = webrtc_ctx.video_processor.recv(None)
+    if received_frame:
+        st.image(
+            received_frame.to_ndarray(format="bgr24"),
+            use_column_width=True,
+            channels="BGR",
+            output_format="BGR",
+            caption="Live Video Stream"
+        )
+        st.markdown(
+            "<div style='border: 2px solid black; padding: 10px'>" + received_frame.to_ndarray(
+                format="bgr24") + "</div>",
+            unsafe_allow_html=True
+        )
+    else:
+        st.write("Waiting for video stream...")
