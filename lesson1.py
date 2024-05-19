@@ -84,35 +84,28 @@ class VideoTransformerWithTextOverlay(VideoTransformerBase):
             # Grab the last five values
             self.sentence = self.sentence[-5:]
 
-        # Combine the last 5 predictions into a single string
-        prediction_text = ' '.join(self.sentence[-5:])
+        # Draw text overlay
+        if len(self.sentence) > 0:
+            image = self.draw_text_overlay(image, self.sentence[-1])
 
-        # Return the image and prediction text
-        return image, prediction_text
+        return image
+
+    def draw_text_overlay(self, image, text):
+        cv2.putText(image, text, (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+        return image
 
 
 # Create an instance of the VideoTransformerWithTextOverlay class
 video_transformer = VideoTransformerWithTextOverlay()
 
 # Start WebRTC streaming with the custom video transformer
-webrtc_ctx = webrtc_streamer(
-    key="example",
-    mode=WebRtcMode.SENDRECV,
-    rtc_configuration=RTC_CONFIGURATION,
-    media_stream_constraints={"video": True, "audio": False},
-    video_transformer_factory=video_transformer,
-    async_processing=True,
-)
-
-# Layout for displaying the predictions underneath the video stream
-st.write("Predictions:")
-predictions_placeholder = st.empty()
+webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, video_transformer_factory=video_transformer)
 
 
 def lesson_page_1():
     st.title("Lesson 1")
-    st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
-             "ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
+    st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. "
+             "When you are ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
     st.write("In this lesson, we will practice the following gestures:")
 
     gesture_gifs = {
@@ -132,3 +125,14 @@ def lesson_page_1():
     for gesture_name, selected in selected_gestures.items():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
+
+    webrtc_ctx = webrtc_streamer(
+        key="example",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=RTC_CONFIGURATION,
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        },
+        async_processing=True,
+    )
