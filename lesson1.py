@@ -5,7 +5,7 @@ import mediapipe as mp
 import tensorflow as tf
 import traceback
 from gcsfs import GCSFileSystem
-from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration, VideoTransformerBase
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
@@ -37,96 +37,42 @@ except Exception as e:
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
-RTC_CONFIGURATION = {
-    "iceServers": [{"urls": "stun:stun.l.google.com:19302"}]
-}
-
-
-class VideoTransformerWithTextOverlay(VideoTransformerBase):
+class VideoProcessor(VideoProcessorBase):
     def __init__(self):
+        self.model = lesson1_model
+        self.actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
         self.sequence = []
         self.sentence = []
-        self.predictions = []
         self.threshold = 0.4
-        self.actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
-                                 'hungry', 'like'])
-        self.model = lesson1_model
         self.mp_holistic = mp.solutions.holistic
 
-    def transform(self, frame):
-        image = frame.to_ndarray(format="bgr24")
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")
 
-        # Make detections
-        image, results = mediapipe_detection(image, self.mp_holistic)
+        # Mediapipe processing
+        with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+            image, results = mediapipe_detection(img, holistic)
+            keypoints = extract_key_points(results)
+            self.sequence.append(keypoints)
+            self.sequence = self.sequence[-30:]
 
-        # Extract key_points from video
-        key_points = extract_key_points(results)
+            if len(self.sequence) == 30:
+                res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]
+                predicted_action_index = np.argmax(res)
+                if res[predicted_action_index] > self.threshold:
+                    self.sentence.append(self.actions[predicted_action_index])
 
-        # Appending key_points to sequence list
-        self.sequence.append(key_points)
+            if len(self.sentence) > 5:
+                self.sentence = self.sentence[-5:]
 
-        # Grabs the last 30 frames to generate a prediction
-        self.sequence = self.sequence[-30:]
+            if len(self.sentence) > 0:
+                cv2.putText(image, self.sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
-        # Run prediction only if the length of sequence equals 30
-        if len(self.sequence) == 30:
-            res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]
-            predicted_action_index = np.argmax(res)
-            self.predictions.append(predicted_action_index)
+        return av.VideoFrame.from_ndarray(image, format="bgr24")
 
-            # Visualization logic
-            # If result above threshold
-            if res[predicted_action_index] > self.threshold:
-                self.sentence.append(self.actions[predicted_action_index])
-
-        # If the sentence length is greater than 5
-        if len(self.sentence) > 5:
-            # Grab the last five values
-            self.sentence = self.sentence[-5:]
-
-        # Draw text overlay
-        if len(self.sentence) > 0:
-            image = self.draw_text_overlay(image, self.sentence[-1])
-
-        return image
-
-    def draw_text_overlay(self, image, text):
-        cv2.putText(image, text, (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-        return image
-
-
-# Create an instance of the VideoTransformerWithTextOverlay class
-video_transformer = VideoTransformerWithTextOverlay()
-
-# Start WebRTC streaming with the custom video transformer
-st.write("Video Stream:")
-st.image(
-    webrtc_streamer(
-        key="example",
-        mode=WebRtcMode.SENDRECV,
-        video_transformer_factory=video_transformer,
-        rtc_configuration=RTC_CONFIGURATION,
-        async_processing=True,
-    ),
-    use_column_width=True,
-    channels="BGR",
-    output_format="BGR",
-    caption="Live Video Stream"
-)
-
-# Display the video stream with a border
-st.markdown(
-    "<div style='border: 2px solid black; padding: 10px'>" + video_streamer.html + "</div>",
-    unsafe_allow_html=True
-)
-
-# Add a section below the video for predictions
-st.markdown("<br>", unsafe_allow_html=True)
-st.subheader("Predictions")
-st.markdown("---")  # Horizontal line to separate predictions
-
-# Your existing code for displaying gesture checkboxes and GIFs
-
+RTC_CONFIGURATION = RTCConfiguration({
+    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+})
 
 def lesson_page_1():
     st.title("Lesson 1")
@@ -151,3 +97,15 @@ def lesson_page_1():
     for gesture_name, selected in selected_gestures.items():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
+
+    webrtc_ctx = webrtc_streamer(
+        key="example",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=RTC_CONFIGURATION,
+        video_processor_factory=VideoProcessor,
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        },
+        async_processing=True,
+    )
