@@ -1,3 +1,4 @@
+import av
 import streamlit as st
 import cv2
 import numpy as np
@@ -37,12 +38,10 @@ except Exception as e:
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
-
 class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.model = lesson1_model
-        self.actions = np.array(
-            ['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
+        self.actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
         self.sequence = []
         self.sentence = []
         self.threshold = 0.4
@@ -54,8 +53,8 @@ class VideoProcessor(VideoProcessorBase):
         # Mediapipe processing
         with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
             image, results = mediapipe_detection(img, holistic)
-            key_points = extract_key_points(results)
-            self.sequence.append(key_points)
+            keypoints = extract_key_points(results)
+            self.sequence.append(keypoints)
             self.sequence = self.sequence[-30:]
 
             if len(self.sequence) == 30:
@@ -68,16 +67,13 @@ class VideoProcessor(VideoProcessorBase):
                 self.sentence = self.sentence[-5:]
 
             if len(self.sentence) > 0:
-                text = self.sentence[-1]
-                cv2.putText(image, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                cv2.putText(image, self.sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
-        return image
+        return av.VideoFrame.from_ndarray(image, format="bgr24")
 
-
-RTC_CONFIGURATION = RTCConfiguration(
-    ice_servers=[{"urls": "stun:stun.l.google.com:19302"}]
-)
-
+RTC_CONFIGURATION = RTCConfiguration({
+    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+})
 
 def lesson_page_1():
     st.title("Lesson 1")
