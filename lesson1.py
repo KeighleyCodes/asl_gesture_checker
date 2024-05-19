@@ -54,8 +54,8 @@ class VideoProcessor(VideoProcessorBase):
         # Mediapipe processing
         with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
             image, results = mediapipe_detection(img, holistic)
-            keypoints = extract_key_points(results)
-            self.sequence.append(keypoints)
+            key_points = extract_key_points(results)
+            self.sequence.append(key_points)
             self.sequence = self.sequence[-30:]
 
             if len(self.sequence) == 30:
