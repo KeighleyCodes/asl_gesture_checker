@@ -6,6 +6,6 @@ tensorflow==2.16.1
 requests~=2.31.0
 pandas==2.2.2
 keras==3.2.1
-gcsfs
+gcsfs~=2024.5.0
 st-files-connection
 streamlit-webrtc
