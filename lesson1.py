@@ -99,7 +99,33 @@ class VideoTransformerWithTextOverlay(VideoTransformerBase):
 video_transformer = VideoTransformerWithTextOverlay()
 
 # Start WebRTC streaming with the custom video transformer
-webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, video_transformer_factory=video_transformer)
+st.write("Video Stream:")
+st.image(
+    webrtc_streamer(
+        key="example",
+        mode=WebRtcMode.SENDRECV,
+        video_transformer_factory=video_transformer,
+        rtc_configuration=RTC_CONFIGURATION,
+        async_processing=True,
+    ),
+    use_column_width=True,
+    channels="BGR",
+    output_format="BGR",
+    caption="Live Video Stream"
+)
+
+# Display the video stream with a border
+st.markdown(
+    "<div style='border: 2px solid black; padding: 10px'>" + video_streamer.html + "</div>",
+    unsafe_allow_html=True
+)
+
+# Add a section below the video for predictions
+st.markdown("<br>", unsafe_allow_html=True)
+st.subheader("Predictions")
+st.markdown("---")  # Horizontal line to separate predictions
+
+# Your existing code for displaying gesture checkboxes and GIFs
 
 
 def lesson_page_1():
@@ -125,14 +151,3 @@ def lesson_page_1():
     for gesture_name, selected in selected_gestures.items():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
-
-    webrtc_ctx = webrtc_streamer(
-        key="example",
-        mode=WebRtcMode.SENDRECV,
-        rtc_configuration=RTC_CONFIGURATION,
-        media_stream_constraints={
-            "video": True,
-            "audio": False
-        },
-        async_processing=True,
-    )
