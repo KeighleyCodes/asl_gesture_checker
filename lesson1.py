@@ -1,11 +1,11 @@
-import cv2
 import streamlit as st
+import cv2
 import numpy as np
 import mediapipe as mp
 import tensorflow as tf
 import traceback
 from gcsfs import GCSFileSystem
-from streamlit_webrtc import VideoTransformerBase, webrtc_streamer, WebRtcMode
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
 mp_holistic = mp.solutions.holistic
@@ -37,12 +37,47 @@ except Exception as e:
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
+class VideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self.model = lesson1_model
+        self.actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
+        self.sequence = []
+        self.sentence = []
+        self.threshold = 0.4
+        self.mp_holistic = mp.solutions.holistic
+
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+
+        # Mediapipe processing
+        with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+            image, results = mediapipe_detection(img, holistic)
+            keypoints = extract_key_points(results)
+            self.sequence.append(keypoints)
+            self.sequence = self.sequence[-30:]
+
+            if len(self.sequence) == 30:
+                res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]
+                predicted_action_index = np.argmax(res)
+                if res[predicted_action_index] > self.threshold:
+                    self.sentence.append(self.actions[predicted_action_index])
+
+            if len(self.sentence) > 5:
+                self.sentence = self.sentence[-5:]
+
+            if len(self.sentence) > 0:
+                cv2.putText(image, self.sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+
+        return av.VideoFrame.from_ndarray(image, format="bgr24")
+
+RTC_CONFIGURATION = RTCConfiguration({
+    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+})
 
 def lesson_page_1():
     st.title("Lesson 1")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. "
-             "When you are ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try "
-             "a few times.")
+             "When you are ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
     st.write("In this lesson, we will practice the following gestures:")
 
     gesture_gifs = {
@@ -63,54 +98,17 @@ def lesson_page_1():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
 
-    webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, video_transformer_factory=VideoTransformer)
+    webrtc_ctx = webrtc_streamer(
+        key="example",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=RTC_CONFIGURATION,
+        video_processor_factory=VideoProcessor,
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        },
+        async_processing=True,
+    )
 
-
-class VideoTransformer(VideoTransformerBase):
-    def __init__(self):
-        self.sequence = []
-        self.sentence = []
-        self.predictions = []
-        self.threshold = 0.4
-        self.actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
-                                 'hungry', 'like'])
-        self.model = lesson1_model
-
-        self.holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-
-    def transform(self, frame):
-        image = frame.to_ndarray(format="bgr24")
-
-        # Make detections
-        image, results = mediapipe_detection(image, self.holistic)
-
-        # Extract key_points from video
-        key_points = extract_key_points(results)
-
-        # Appending key_points to sequence list
-        self.sequence.append(key_points)
-
-        # Grabs the last 30 frames to generate a prediction
-        self.sequence = self.sequence[-30:]
-
-        # Run prediction only if the length of sequence equals 30
-        if len(self.sequence) == 30:
-            res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]
-            predicted_action_index = np.argmax(res)
-            self.predictions.append(predicted_action_index)
-
-            # Visualization logic
-            # If result above threshold
-            if res[predicted_action_index] > self.threshold:
-                self.sentence.append(self.actions[predicted_action_index])
-
-        # If the sentence length is greater than 5
-        if len(self.sentence) > 5:
-            # Grab the last five values
-            self.sentence = self.sentence[-5:]
-
-        if len(self.sentence) > 0:
-            cv2.putText(image, self.sentence[-1], (3, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-
-        return image
+if __name__ == "__main__":
+    lesson_page_1()
