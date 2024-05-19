@@ -38,8 +38,8 @@ except Exception as e:
 
 def lesson_page_1():
     st.title("Lesson 1")
-    st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
-             "ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
+    st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. "
+             "When you are ready, select 'Start Camera' to begin practicing the gestures. Remember to go slow and try a few times.")
     st.write("In this lesson, we will practice the following gestures:")
 
     gesture_gifs = {
@@ -66,7 +66,8 @@ def lesson_page_1():
         start_video_feed1()
 
 def start_video_feed1():
-    lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
+    lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
+                                'hungry', 'like'])
 
     sequence = []
     sentence = []
@@ -74,6 +75,10 @@ def start_video_feed1():
     threshold = 0.4
 
     capture = cv2.VideoCapture(0)
+
+    if not capture.isOpened():
+        st.error("Unable to open the camera. Please ensure that the camera is connected and accessible.")
+        return
 
     with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
         while capture.isOpened():
@@ -83,8 +88,8 @@ def start_video_feed1():
                 break
 
             image, results = mediapipe_detection(frame, holistic)
-            key_points = extract_key_points(results)
-            sequence.append(key_points)
+            keypoints = extract_key_points(results)
+            sequence.append(keypoints)
             sequence = sequence[-30:]
 
             if len(sequence) == 30:
@@ -101,11 +106,9 @@ def start_video_feed1():
             if len(sentence) > 0:
                 cv2.putText(image, sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
-            frame_placeholder = st.empty()
-            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            frame_placeholder.image(image_rgb, channels="RGB")
+            cv2.imshow('Open Camera Feed', image)
 
-            if st.button("Stop camera"):
+            if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
 
     capture.release()
