@@ -3,9 +3,10 @@ import cv2
 import numpy as np
 import os
 import mediapipe as mp
-import tensorflow as tf
 from gcsfs import GCSFileSystem
-from tensorflow.keras.models import load_model
+import tensorflow as tf
+
+from keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
 
@@ -25,10 +26,11 @@ with fs.open(model_path, 'rb') as f_in:
         f_out.flush()
         f_out.close()
 
+
 # Load the model outside the function
 try:
     # Load the model directly using tf.keras
-    lesson2_model = tf.keras.models.load_model(local_model_path, compile=False)
+    lesson1_model = tf.keras.models.load_model(local_model_path, compile=False)
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.error(f"Exception traceback: {traceback.format_exc()}")

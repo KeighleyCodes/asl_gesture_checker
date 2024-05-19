@@ -1,3 +1,4 @@
+import gcsfs
 import streamlit as st
 import cv2
 import numpy as np
@@ -5,6 +6,7 @@ import os
 import mediapipe as mp
 import tensorflow as tf
 from gcsfs import GCSFileSystem
+from keras.src.export.export_lib import TFSMLayer
 from tensorflow.keras.models import load_model
 import traceback
 from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
@@ -34,47 +36,36 @@ except Exception as e:
     st.error(f"Exception traceback: {traceback.format_exc()}")
     st.stop()
 
-def start_video_feed():
-    capture = cv2.VideoCapture(0)
-    sequence = []
-    sentence = []
-    threshold = 0.4
+# Define the local path for data storage
+LOCAL_DATA_PATH = './local_data/lesson1'
 
-    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-        while capture.isOpened():
-            ret, frame = capture.read()
-            image, results = mediapipe_detection(frame, holistic)
-            key_points = extract_key_points(results)
-            sequence.append(key_points)
-            sequence = sequence[-30:]
 
-            if len(sequence) == 30:
-                try:
-                    results = lesson1_model.predict(np.expand_dims(sequence, axis=0))[0]
-                    predicted_action_index = np.argmax(results)
-                    if results[predicted_action_index] > threshold:
-                        sentence.append(lesson1_actions[predicted_action_index])
-                except Exception as e:
-                    st.error(f"Error during prediction: {e}")
+# Download data files from GCS to local storage
+def download_data():
+    DATA_PATH = 'gs://keras-files/lesson1'
+    lesson1_actions = np.array(
+        ['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry', 'like'])
+    num_sequences = 30
+    sequence_length = 30
 
-            if len(sentence) > 5:
-                sentence = sentence[-5:]
+    for action in lesson1_actions:
+        for sequence_index in range(num_sequences):
+            for frame_num in range(sequence_length):
+                path_to_load = f"{DATA_PATH}/{action}/{sequence_index}/{frame_num}.npy"
+                local_path_to_save = f"{LOCAL_DATA_PATH}/{action}/{sequence_index}/{frame_num}.npy"
 
-            if len(sentence) > 0:
-                cv2.putText(image, sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+                os.makedirs(os.path.dirname(local_path_to_save), exist_ok=True)
 
-            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            st.image(image_rgb, channels="RGB", use_column_width=True)
+                with fs.open(path_to_load, 'rb') as f_in:
+                    with open(local_path_to_save, 'wb') as f_out:
+                        f_out.write(f_in.read())
+                        f_out.flush()
+                        f_out.close()
 
-            if not ret:
-                st.write("The video capture has ended.")
-                break
 
-st.title("Gesture Recognition")
-start_button_pressed = st.button("Start Camera")
+# Call this function to download the data at the start
+download_data()
 
-if start_button_pressed:
-    start_video_feed()
 
 def lesson_page_1():
     st.title("Lesson 1")
@@ -103,42 +94,26 @@ def lesson_page_1():
     start_button_pressed = st.button("Start camera")
 
     if start_button_pressed:
-
-        # Load model
-        try:
-            lesson1_model = load_model('lesson1.keras', compile=False)
-        except Exception as e:
-            st.error(f"Error loading the model: {e}")
-            st.error(f"Exception traceback: {traceback.format_exc()}")
-            st.stop()
-
         # Sets path for exported data (numpy arrays)
-        DATA_PATH = os.path.join('lesson2')
+        LOCAL_DATA_PATH = './local_data/lesson1'
 
         lesson1_actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
                                     'hungry', 'like'])
 
         num_sequences = 30
-
         sequence_length = 30
-
         lesson1_label_map = {label: num for num, label in enumerate(lesson1_actions)}
 
         lesson1_sequences, lesson1_labels = [], []
 
         for action in lesson1_actions:
-
             for sequence_index in range(num_sequences):
-
                 window = []
-
                 for frame_num in range(sequence_length):
-                    # Loads frame
-                    res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
-                    path_to_load = os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num))
-                    res = np.load(path_to_load)
+                    local_path_to_load = f"{LOCAL_DATA_PATH}/{action}/{sequence_index}/{frame_num}.npy"
 
-                    # Add frames to window
+                    res = np.load
+
                     window.append(res)
 
                 lesson1_sequences.append(window)
