@@ -1,7 +1,6 @@
 import traceback
 import cv2
 import numpy as np
-import requests
 import streamlit as st
 import tensorflow as tf
 from gcsfs import GCSFileSystem
@@ -75,7 +74,6 @@ def display_gif(gif_path, gesture_name):
 
 
 # Function to download and load models directly from GCS
-@st.cache_resource
 def download_and_load_model(model_path):
     # Initialize a GCS file system object
     fs = GCSFileSystem(project='keras-file-storage')
