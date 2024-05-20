@@ -24,7 +24,7 @@ try:
     with fs.open(model_path, 'rb') as f_in:
         with open(local_model_path, 'wb') as f_out:
             f_out.write(f_in.read())
-    st.write("Model downloaded successfully.")  # Debug statement
+
 except Exception as e:
     # Display error message if model download fails
     st.error(f"Error downloading the model: {e}")

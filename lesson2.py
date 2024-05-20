@@ -35,7 +35,7 @@ except Exception as e:
 try:
     # Load the trained model from the local file system
     lesson2_model = tf.keras.models.load_model(local_model_path, compile=False)
-    st.write("Model loaded successfully.")  # Debug statement
+
 except Exception as e:
     # Display error message if model loading fails
     st.error(f"Error loading the model: {e}")
