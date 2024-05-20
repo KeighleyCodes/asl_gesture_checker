@@ -1,8 +1,11 @@
+import traceback
+
 import cv2
 import numpy as np
 import requests
 import streamlit as st
 import tensorflow as tf
+from gcsfs import GCSFileSystem
 from tensorflow.python.keras.models import load_model
 
 
@@ -73,18 +76,31 @@ def display_gif(gif_path, gesture_name):
     st.session_state[f"{gesture_name}_gif_displayed"] = True
 
 
-# Function to download keras files
-# def download_file(url, local_filename):
-#     with requests.get(url, stream=True) as r:
-#         r.raise_for_status()
-#         with open(local_filename, 'wb') as f:
-#             for chunk in r.iter_content(chunk_size=8192):
-#                 f.write(chunk)
+# Function to download and load models
+def download_and_load_model(model_path, local_model_path):
+    # Initialize a GCS file system object
+    fs = GCSFileSystem(project='keras-file-storage')
 
-def load_model_from_google_drive(google_drive_link):
-    file_id = google_drive_link.split('/')[-2]
-    download_link = f'https://drive.google.com/uc?export=download&id={file_id}'
-    response = requests.get(download_link)
-    with open('model.h5', 'wb') as f:
-        f.write(response.content)
-    return tf.keras.models.load_model('model.h5')
+    # Download the model file from GCS to local file system
+    try:
+        with fs.open(model_path, 'rb') as f_in:
+            with open(local_model_path, 'wb') as f_out:
+                f_out.write(f_in.read())
+                f_out.flush()
+                f_out.close()
+    except Exception as e:
+        # Display error message if model download fails
+        st.error(f"Error downloading the model: {e}")
+        st.error(f"Exception traceback: {traceback.format_exc()}")
+        st.stop()
+
+    # Load the model outside the function
+    try:
+        # Load the trained model from the local file system
+        model = tf.keras.models.load_model(local_model_path, compile=False)
+        return model
+    except Exception as e:
+        # Display error message if model loading fails
+        st.error(f"Error loading the model: {e}")
+        st.error(f"Exception traceback: {traceback.format_exc()}")
+        st.stop()

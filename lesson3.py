@@ -1,15 +1,72 @@
+import av
 import streamlit as st
 import cv2
 import numpy as np
-import os
 import mediapipe as mp
-from tensorflow.keras.models import load_model
-import traceback
-from shared_functions import mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes
+from gcsfs import GCSFileSystem
+from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
+from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes,
+                              download_and_load_model)
 
+# Initialize a Mediapipe Holistic object
 mp_holistic = mp.solutions.holistic
 
+# Initialize a GCS file system object
+fs = GCSFileSystem(project='keras-file-storage')
 
+# Specify the path to the model file in the GCS bucket
+model_path = 'gs://keras-files/lesson3.keras'
+local_model_path = 'lesson3.keras'
+
+# Call function to download the model
+lesson3_model = download_and_load_model(model_path, local_model_path)
+
+
+class VideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self.model = lesson3_model  # Initialize model attribute with loaded model
+        self.actions = np.array(['name', 'need', 'now', 'please', 'sad', 'school', 'slow', 'sorry', 'wait', 'want'])
+        self.sequence = []  # Initialize an empty list to store key point sequences
+        self.sentence = []  # Initialize an empty list to store recognized sentences
+        self.threshold = 0.4  # Define a confidence threshold
+        self.mp_holistic = mp.solutions.holistic  # Initialize Mediapipe Holistic object
+
+    # Define a method to process video frames
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")  # Convert video frame to NumPy array
+
+        # Mediapipe processing
+        with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+            image, results = mediapipe_detection(img, holistic)  # Perform detection using Mediapipe
+            key_points = extract_key_points(results)  # Extract key points from detection results
+            self.sequence.append(key_points)  # Append key points to sequence list
+            self.sequence = self.sequence[-30:]  # Keep only the last 30 frames in the sequence
+
+            # Perform prediction when sequence length reaches 30
+            if len(self.sequence) == 30:
+                res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]  # Perform model prediction
+                predicted_action_index = np.argmax(res)  # Get index of predicted action
+                if res[predicted_action_index] > self.threshold:  # Check if prediction confidence is above threshold
+                    self.sentence.append(
+                        self.actions[predicted_action_index])  # Append predicted action to sentence list
+
+            if len(self.sentence) > 5:  # Keep only the last 5 sentences
+                self.sentence = self.sentence[-5:]
+
+            if len(self.sentence) > 0:  # Add recognized sentence to the video frame
+                cv2.putText(image, self.sentence[-1], (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+
+        # Convert the modified image back to a video frame and return it
+        return av.VideoFrame.from_ndarray(image, format="bgr24")
+
+
+# Define RTC configuration for WebRTC
+RTC_CONFIGURATION = RTCConfiguration({
+    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+})
+
+
+# Define a custom video processor class inheriting from VideoProcessorBase
 def lesson_page_3():
     st.title("Lesson 3")
     st.write("Select any of the gestures you'd like to see. Deselect them if you no longer need them. When you are "
@@ -30,147 +87,23 @@ def lesson_page_3():
         "want": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDZ2bHQ2d3BjdDhwaGU4eDhrcWtya3hjYzdteW41Z2ZiNzNteWZycCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/u539NsiA5aefP6pYkd/giphy.gif"
     }
 
-    # Checkboxes for selecting GIFs
+    # Display gesture checkboxes and get selected gestures
     selected_gestures = display_gesture_checkboxes(gesture_gifs)
+
+    # Iterate over selected gestures and display corresponding GIFs
     for gesture_name, selected in selected_gestures.items():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
 
-    # Button to start the video feed
-    start_button_pressed = st.button("Start camera")
-
-    if start_button_pressed:
-
-        # Load model
-        try:
-            lesson3_model = load_model('lesson3.keras')
-        except Exception as e:
-            st.error(f"Error loading the model: {e}")
-            st.error(f"Exception traceback: {traceback.format_exc()}")
-            st.stop()
-
-        # Sets path for exported data (numpy arrays)
-        DATA_PATH = os.path.join('lesson3')
-
-        # Actions to detect (10 actions multiplied by 30 frames multiplied by 30 sequences)
-        lesson3_actions = np.array(['name', 'need', 'now', 'please', 'sad', 'school', 'slow', 'sorry', 'wait', 'want'])
-
-        # Number of videos
-        num_sequences = 30
-
-        # Number of frames
-        sequence_length = 30
-
-        # Creates a dictionary of labels
-        lesson3_label_map = {label: num for num, label in enumerate(lesson3_actions)}
-
-        # Array of sequences (features) used to train model to represent relationship between labels
-        lesson3_sequences, lesson3_labels = [], []
-
-        # loops through each action
-        for action in lesson3_actions:
-
-            # Loops through each sequence
-            for sequence_index in range(num_sequences):
-
-                # Blank array to represent all frames for particular sequence
-                window = []
-
-                # Loops through each frame
-                for frame_num in range(sequence_length):
-                    # Loads frame
-                    res = np.load(os.path.join(DATA_PATH, action, str(sequence_index), "{}.npy".format(frame_num)))
-
-                    # Add frames to window
-                    window.append(res)
-
-                # Append video to sequences
-                lesson3_sequences.append(window)
-
-                # Append labels
-                lesson3_labels.append(lesson3_label_map[action])
-
-        # Function to start the video feed
-        def start_video_feed3():
-
-            # Button to stop the video feed
-            stop_button_pressed = st.button("Stop camera")
-
-            # Appending to list collects 30 frames to generate prediction
-            sequence = []
-
-            # Allows concatenation of history
-            sentence = []
-
-            predictions = []
-
-            # Only renders results if above a certain threshold
-            threshold = 0.4
-
-            # Function for opening the video feed
-            capture = cv2.VideoCapture(0)
-
-            # Display a placeholder for the frame
-            frame_placeholder = st.empty()
-
-            # Initial detection confidence & tracking confidence set
-            with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-
-                # While the camera is opened
-                while capture.isOpened():
-                    # Reads feed
-                    ret, frame = capture.read()
-
-                    # Make detections
-                    image, results = mediapipe_detection(frame, holistic)
-
-                    # Extract key points from video
-                    key_points = extract_key_points(results)
-
-                    # Appending key points to sequence list
-                    sequence.append(key_points)
-
-                    # Grabs the last 30 frames to generate a prediction
-                    sequence = sequence[-30:]
-
-                    # Run prediction only if the length of sequence equals 30
-                    if len(sequence) == 30:
-                        try:
-                            results = lesson3_model.predict(np.expand_dims(sequence, axis=0))[0]
-                            predicted_action_index = np.argmax(results)
-                            predictions.append(predicted_action_index)
-
-                            if results[predicted_action_index] > threshold:
-                                sentence.append(lesson3_actions[predicted_action_index])
-                        except Exception as e:
-                            st.error(f"Error during prediction: {e}")
-                            st.error(f"Exception traceback: {traceback.format_exc()}")
-
-                    if len(sentence) > 5:
-                        sentence = sentence[-5:]
-
-                    if len(sentence) > 0:
-                        cv2.putText(image, sentence[-1], (3, 30),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-
-                    # Convert the OpenCV image to RGB
-                    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-                    # Display the frame with predictions overlaid using Streamlit
-                    frame_placeholder.image(image_rgb, channels="RGB")
-
-                    # Check if frame was successfully read
-                    if not ret:
-                        st.write("The video capture has ended.")
-                        break
-
-                    # Check if the stop button is pressed
-                    if stop_button_pressed:
-                        break
-
-            # Releases the camera feed, closes all windows
-            capture.release()
-            cv2.destroyAllWindows()
-
-        # Start the video feed
-        start_video_feed3()
+    # Start WebRTC streaming session
+    webrtc_streamer(
+        key="example",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=RTC_CONFIGURATION,
+        video_processor_factory=VideoProcessor,
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        },
+        async_processing=True,
+    )
