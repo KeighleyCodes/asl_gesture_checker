@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 import mediapipe as mp
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
-from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes,
-                              download_and_load_model)
+from shared_functions import *
+
 
 # Initialize a Mediapipe Holistic object
 mp_holistic = mp.solutions.holistic
