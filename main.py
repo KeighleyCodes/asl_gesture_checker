@@ -9,10 +9,11 @@ def information_page():
     st.title("Hands On Learning")
     st.write("Welcome to Hands on Learning's virtual lesson practice. Please select a lesson from the left section of "
              "the page. You will be able to use your webcam to practice your ASL gestures for each of the lessons.")
-    st.write("The program will begin analyzing the video feed once it detects both hands in the frame. There may be a "
-             "slight delay before it starts displaying the predicted gestures. Once initiated, the program will swiftly "
-             "predict gestures frame by frame as you move, providing immediate feedback. Take your time and repeat the "
-             "gestures as needed for accurate analysis")
+    st.write("The program will begin analyzing the video feed once it detects both hands in the frame. Both hands need "
+             "to be visible in the camera frame before any predictions are made. There may be a slight delay before it "
+             "starts displaying the predicted gestures. Once initiated, the program will swiftly predict gestures frame"
+             " by frame as you move, providing immediate feedback. Take your time and repeat the gestures as needed for"
+             " accurate analysis.")
 
 
 def main():
