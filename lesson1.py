@@ -3,23 +3,38 @@ import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
+import tensorflow as tf
+import traceback
 from gcsfs import GCSFileSystem
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
-from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes,
-                              download_and_load_model)
+from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes)
 
 # Initialize a Mediapipe Holistic object
 mp_holistic = mp.solutions.holistic
+
+
+# Define a function to download and load models directly from GCS
+@st.cache(ttl=600)  # Cache with a time-to-live (TTL) of 600 seconds (10 minutes)
+def download_and_load_model(fs, model_path):
+    # Load the model directly from GCS into memory
+    try:
+        with fs.open(model_path, 'rb') as f:
+            model = tf.keras.models.load_model(f, compile=False)
+        return model
+    except Exception as e:
+        st.error(f"Error loading the model: {e}")
+        st.error(f"Exception traceback: {traceback.format_exc()}")
+        st.stop()
+
 
 # Initialize a GCS file system object
 fs = GCSFileSystem(project='keras-file-storage')
 
 # Specify the path to the model file in the GCS bucket
 model_path = 'gs://keras-files/lesson1.keras'
-local_model_path = 'lesson1.keras'
 
-# Call function to download the model
-lesson1_model = download_and_load_model(model_path, local_model_path)
+# Call the function to download and load the model
+lesson1_model = download_and_load_model(fs, model_path)
 
 
 # Define a custom video processor class inheriting from VideoProcessorBase
