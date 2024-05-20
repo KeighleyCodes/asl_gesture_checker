@@ -16,15 +16,18 @@ mp_holistic = mp.solutions.holistic
 # Define a function to download and load models directly from GCS
 @st.cache(ttl=600)  # Cache with a time-to-live (TTL) of 600 seconds (10 minutes)
 def download_and_load_model(fs, model_path):
-    # Load the model directly from GCS into memory
     try:
         with fs.open(model_path, 'rb') as f:
             model = tf.keras.models.load_model(f, compile=False)
         return model
-    except Exception as e:
+    except FileNotFoundError as e:
+        st.error(f"Model file not found: {model_path}")
+    except ValueError as e:
         st.error(f"Error loading the model: {e}")
-        st.error(f"Exception traceback: {traceback.format_exc()}")
-        st.stop()
+    except OSError as e:
+        st.error(f"OS error: {e}")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
 
 
 # Initialize a GCS file system object
