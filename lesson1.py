@@ -114,7 +114,7 @@ def lesson_page_1():
         if selected:
             display_gif(gif_path=gesture_gifs[gesture_name], gesture_name=gesture_name)
 
-    # Start WebRTC streaming session
+        # Start WebRTC streaming session
     webrtc_streamer(
         key="example",
         mode=WebRtcMode.SENDRECV,
@@ -124,5 +124,5 @@ def lesson_page_1():
             "video": True,
             "audio": False
         },
-        async_processing=False,  # Disable async processing
+        async_processing=True,
     )
