@@ -11,7 +11,7 @@ from shared_functions import (mediapipe_detection, extract_key_points, display_g
 mp_holistic = mp.solutions.holistic
 
 # Specify the path to the model file in the GCS bucket
-model_path = 'gs://keras-files/lesson3.keras'
+model_path = 'gs://keras-files/lesson3.h5'
 
 # Call function to load the model directly from GCS
 lesson3_model = download_and_load_model(model_path)
