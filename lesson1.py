@@ -124,5 +124,5 @@ def lesson_page_1():
             "video": True,
             "audio": False
         },
-        async_processing=True,
+        async_processing=False,  # Disable async processing
     )
