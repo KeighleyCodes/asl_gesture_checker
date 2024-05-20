@@ -9,3 +9,4 @@ keras==3.2.1
 gcsfs~=2024.5.0
 st-files-connection
 streamlit-webrtc
+av~=11.0.0
