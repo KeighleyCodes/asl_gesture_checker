@@ -12,10 +12,9 @@ mp_holistic = mp.solutions.holistic
 
 # Specify the path to the model file in the GCS bucket
 model_path = 'gs://keras-files/lesson2.keras'
-local_model_path = 'lesson2.keras'
 
-# Call function to download the model
-lesson2_model = download_and_load_model(model_path, local_model_path)
+# Call function to load the model directly from GCS
+lesson2_model = download_and_load_model(model_path)
 
 
 # Define a custom video processor class inheriting from VideoProcessorBase
