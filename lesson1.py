@@ -3,26 +3,32 @@ import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
+from gcsfs import GCSFileSystem
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
-from shared_functions import *
-
+from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes,
+                              download_and_load_model)
 
 # Initialize a Mediapipe Holistic object
 mp_holistic = mp.solutions.holistic
 
-# Specify the path to the model file in the GCS bucket
-model_path = 'gs://keras-files/lesson1.h5'
+# Initialize a GCS file system object
+fs = GCSFileSystem(project='keras-file-storage')
 
-# Call function to load the model directly from GCS
-lesson1_model = download_and_load_model(model_path)
+# Specify the path to the model file in the GCS bucket
+model_path = 'gs://keras-files/lesson1.keras'
+local_model_path = 'lesson1.keras'
+
+# Call function to download the model
+lesson1_model = download_and_load_model(model_path, local_model_path)
 
 
 # Define a custom video processor class inheriting from VideoProcessorBase
 class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.model = lesson1_model  # Initialize model attribute with loaded model
-        self.actions = np.array(['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how',
-                                 'hungry', 'like'])  # Define action labels
+        self.actions = np.array(
+            ['again', 'alive', 'dad', 'family', 'friend', 'hard_of_hearing', 'help_me', 'how', 'hungry',
+             'like'])  # Define action labels
         self.sequence = []  # Initialize an empty list to store key point sequences
         self.sentence = []  # Initialize an empty list to store recognized sentences
         self.threshold = 0.4  # Define a confidence threshold
@@ -44,7 +50,8 @@ class VideoProcessor(VideoProcessorBase):
                 res = self.model.predict(np.expand_dims(self.sequence, axis=0))[0]  # Perform model prediction
                 predicted_action_index = np.argmax(res)  # Get index of predicted action
                 if res[predicted_action_index] > self.threshold:  # Check if prediction confidence is above threshold
-                    self.sentence.append(self.actions[predicted_action_index])  # Append predicted action to sentence list
+                    self.sentence.append(
+                        self.actions[predicted_action_index])  # Append predicted action to sentence list
 
             if len(self.sentence) > 5:  # Keep only the last 5 sentences
                 self.sentence = self.sentence[-5:]
@@ -54,6 +61,7 @@ class VideoProcessor(VideoProcessorBase):
 
         # Convert the modified image back to a video frame and return it
         return av.VideoFrame.from_ndarray(image, format="bgr24")
+
 
 # Define RTC configuration for WebRTC
 RTC_CONFIGURATION = RTCConfiguration({

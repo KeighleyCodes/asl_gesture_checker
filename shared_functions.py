@@ -73,17 +73,31 @@ def display_gif(gif_path, gesture_name):
     st.session_state[f"{gesture_name}_gif_displayed"] = True
 
 
-# Function to download and load models directly from GCS
-def download_and_load_model(model_path):
+# Function to download and load models
+def download_and_load_model(model_path, local_model_path):
     # Initialize a GCS file system object
     fs = GCSFileSystem(project='keras-file-storage')
 
-    # Load the model directly from GCS into memory
+    # Download the model file from GCS to local file system
     try:
-        with fs.open(model_path, 'rb') as f:
-            model = tf.keras.models.load_model(f, compile=False)
+        with fs.open(model_path, 'rb') as f_in:
+            with open(local_model_path, 'wb') as f_out:
+                f_out.write(f_in.read())
+                f_out.flush()
+                f_out.close()
+    except Exception as e:
+        # Display error message if model download fails
+        st.error(f"Error downloading the model: {e}")
+        st.error(f"Exception traceback: {traceback.format_exc()}")
+        st.stop()
+
+    # Load the model outside the function
+    try:
+        # Load the trained model from the local file system
+        model = tf.keras.models.load_model(local_model_path, compile=False)
         return model
     except Exception as e:
+        # Display error message if model loading fails
         st.error(f"Error loading the model: {e}")
         st.error(f"Exception traceback: {traceback.format_exc()}")
         st.stop()

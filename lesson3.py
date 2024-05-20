@@ -3,18 +3,23 @@ import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
+from gcsfs import GCSFileSystem
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
-from shared_functions import *
-
+from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes,
+                              download_and_load_model)
 
 # Initialize a Mediapipe Holistic object
 mp_holistic = mp.solutions.holistic
 
-# Specify the path to the model file in the GCS bucket
-model_path = 'gs://keras-files/lesson3.h5'
+# Initialize a GCS file system object
+fs = GCSFileSystem(project='keras-file-storage')
 
-# Call function to load the model directly from GCS
-lesson3_model = download_and_load_model(model_path)
+# Specify the path to the model file in the GCS bucket
+model_path = 'gs://keras-files/lesson3.keras'
+local_model_path = 'lesson3.keras'
+
+# Call function to download the model
+lesson3_model = download_and_load_model(model_path, local_model_path)
 
 
 class VideoProcessor(VideoProcessorBase):
