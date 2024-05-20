@@ -1,15 +1,13 @@
+import traceback
 import av
 import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
+import tensorflow as tf
 from gcsfs import GCSFileSystem
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
-from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes,
-                              download_and_load_model)
-
-# Initialize a Mediapipe Holistic object
-mp_holistic = mp.solutions.holistic
+from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes)
 
 # Initialize a GCS file system object
 fs = GCSFileSystem(project='keras-file-storage')
@@ -18,8 +16,16 @@ fs = GCSFileSystem(project='keras-file-storage')
 model_path = 'gs://keras-files/lesson4.keras'
 local_model_path = 'lesson4.keras'
 
-# Call function to download the model
-lesson4_model = download_and_load_model(model_path, local_model_path)
+# Load the model outside the function
+try:
+    # Load the trained model from the local file system
+    lesson2_model = tf.keras.models.load_model(local_model_path, compile=False)
+    st.write("Model loaded successfully.")  # Debug statement
+except Exception as e:
+    # Display error message if model loading fails
+    st.error(f"Error loading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
 
 
 # Define a custom video processor class inheriting from VideoProcessorBase
@@ -88,6 +94,7 @@ def lesson_page_4():
         "you": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZDJ5cGZleWVmOG1nbmIyNWp6Nms3ZXI2NW9rZWk3cG1tM3czcG1heSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YWhNR9Z055inTOcBaL/giphy.gif",
         "yours": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2lpMDc4OHpsZDJudm40b20wbml6Nmw3amtkdWxoNWhhYjlydGhraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6VaSpEhIcQuLuADHwO/giphy.gif"
     }
+
 
     # Display gesture checkboxes and get selected gestures
     selected_gestures = display_gesture_checkboxes(gesture_gifs)

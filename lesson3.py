@@ -1,15 +1,13 @@
+import traceback
 import av
 import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
+import tensorflow as tf
 from gcsfs import GCSFileSystem
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
-from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes,
-                              download_and_load_model)
-
-# Initialize a Mediapipe Holistic object
-mp_holistic = mp.solutions.holistic
+from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes)
 
 # Initialize a GCS file system object
 fs = GCSFileSystem(project='keras-file-storage')
@@ -18,8 +16,16 @@ fs = GCSFileSystem(project='keras-file-storage')
 model_path = 'gs://keras-files/lesson3.keras'
 local_model_path = 'lesson3.keras'
 
-# Call function to download the model
-lesson3_model = download_and_load_model(model_path, local_model_path)
+# Load the model outside the function
+try:
+    # Load the trained model from the local file system
+    lesson3_model = tf.keras.models.load_model(local_model_path, compile=False)
+    st.write("Model loaded successfully.")  # Debug statement
+except Exception as e:
+    # Display error message if model loading fails
+    st.error(f"Error loading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
 
 
 class VideoProcessor(VideoProcessorBase):
@@ -86,6 +92,7 @@ def lesson_page_3():
         "wait": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYm53dmx1azFnNm5rYzJlNTJqOWR6bTE0aTZjN2lnaGw1Z2VyZ3lmdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YnP0kJnn1gScEYZ0WM/giphy.gif",
         "want": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDZ2bHQ2d3BjdDhwaGU4eDhrcWtya3hjYzdteW41Z2ZiNzNteWZycCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/u539NsiA5aefP6pYkd/giphy.gif"
     }
+
 
     # Display gesture checkboxes and get selected gestures
     selected_gestures = display_gesture_checkboxes(gesture_gifs)

@@ -1,21 +1,31 @@
+import traceback
 import av
 import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
+import tensorflow as tf
+from gcsfs import GCSFileSystem
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
-from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes,
-                              download_and_load_model)
+from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes)
 
-# Initialize a Mediapipe Holistic object
-mp_holistic = mp.solutions.holistic
+# Initialize a GCS file system object
+fs = GCSFileSystem(project='keras-file-storage')
 
 # Specify the path to the model file in the GCS bucket
 model_path = 'gs://keras-files/lesson2.keras'
 local_model_path = 'lesson2.keras'
 
-# Call function to download the model
-lesson2_model = download_and_load_model(model_path, local_model_path)
+# Load the model outside the function
+try:
+    # Load the trained model from the local file system
+    lesson2_model = tf.keras.models.load_model(local_model_path, compile=False)
+    st.write("Model loaded successfully.")  # Debug statement
+except Exception as e:
+    # Display error message if model loading fails
+    st.error(f"Error loading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
 
 
 # Define a custom video processor class inheriting from VideoProcessorBase
