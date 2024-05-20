@@ -14,10 +14,10 @@ mp_holistic = mp.solutions.holistic
 
 
 # Define a function to download and load models directly from GCS
-@st.cache_data(ttl=600) # Cache with a time-to-live (TTL) of 600 seconds (10 minutes)
-def download_and_load_model(fs, model_path):
+@st.cache_data(ttl=600)  # Cache with a time-to-live (TTL) of 600 seconds (10 minutes)
+def download_and_load_model(_fs, model_path):  # Add a leading underscore to fs
     try:
-        with fs.open(model_path, 'rb') as f:
+        with _fs.open(model_path, 'rb') as f:  # Use _fs instead of fs
             model = tf.keras.models.load_model(f, compile=False)
         return model
     except FileNotFoundError as e:
