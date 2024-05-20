@@ -1,13 +1,16 @@
-import traceback
 import av
 import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
 import tensorflow as tf
+import traceback
 from gcsfs import GCSFileSystem
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
 from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes)
+
+# Initialize a Mediapipe Holistic object
+mp_holistic = mp.solutions.holistic
 
 # Initialize a GCS file system object
 fs = GCSFileSystem(project='keras-file-storage')
@@ -15,6 +18,18 @@ fs = GCSFileSystem(project='keras-file-storage')
 # Specify the path to the model file in the GCS bucket
 model_path = 'gs://keras-files/lesson3.keras'
 local_model_path = 'lesson3.keras'
+
+# Download the model file from GCS to local file system
+try:
+    with fs.open(model_path, 'rb') as f_in:
+        with open(local_model_path, 'wb') as f_out:
+            f_out.write(f_in.read())
+    st.write("Model downloaded successfully.")  # Debug statement
+except Exception as e:
+    # Display error message if model download fails
+    st.error(f"Error downloading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
 
 # Load the model outside the function
 try:
@@ -92,7 +107,6 @@ def lesson_page_3():
         "wait": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYm53dmx1azFnNm5rYzJlNTJqOWR6bTE0aTZjN2lnaGw1Z2VyZ3lmdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YnP0kJnn1gScEYZ0WM/giphy.gif",
         "want": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDZ2bHQ2d3BjdDhwaGU4eDhrcWtya3hjYzdteW41Z2ZiNzNteWZycCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/u539NsiA5aefP6pYkd/giphy.gif"
     }
-
 
     # Display gesture checkboxes and get selected gestures
     selected_gestures = display_gesture_checkboxes(gesture_gifs)

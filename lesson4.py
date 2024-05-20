@@ -1,13 +1,16 @@
-import traceback
 import av
 import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
 import tensorflow as tf
+import traceback
 from gcsfs import GCSFileSystem
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
 from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes)
+
+# Initialize a Mediapipe Holistic object
+mp_holistic = mp.solutions.holistic
 
 # Initialize a GCS file system object
 fs = GCSFileSystem(project='keras-file-storage')
@@ -16,10 +19,22 @@ fs = GCSFileSystem(project='keras-file-storage')
 model_path = 'gs://keras-files/lesson4.keras'
 local_model_path = 'lesson4.keras'
 
+# Download the model file from GCS to local file system
+try:
+    with fs.open(model_path, 'rb') as f_in:
+        with open(local_model_path, 'wb') as f_out:
+            f_out.write(f_in.read())
+    st.write("Model downloaded successfully.")  # Debug statement
+except Exception as e:
+    # Display error message if model download fails
+    st.error(f"Error downloading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
+
 # Load the model outside the function
 try:
     # Load the trained model from the local file system
-    lesson2_model = tf.keras.models.load_model(local_model_path, compile=False)
+    lesson4_model = tf.keras.models.load_model(local_model_path, compile=False)
     st.write("Model loaded successfully.")  # Debug statement
 except Exception as e:
     # Display error message if model loading fails
@@ -33,7 +48,7 @@ class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.model = lesson4_model  # Initialize model attribute with loaded model
         self.actions = np.array(['good', 'happy', 'hearing', 'mine', 'no', 'yes', 'what', 'where', 'who', 'you',
-                                    'yours'])
+                                 'yours'])
         self.sequence = []  # Initialize an empty list to store key point sequences
         self.sentence = []  # Initialize an empty list to store recognized sentences
         self.threshold = 0.4  # Define a confidence threshold
@@ -94,7 +109,6 @@ def lesson_page_4():
         "you": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZDJ5cGZleWVmOG1nbmIyNWp6Nms3ZXI2NW9rZWk3cG1tM3czcG1heSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YWhNR9Z055inTOcBaL/giphy.gif",
         "yours": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2lpMDc4OHpsZDJudm40b20wbml6Nmw3amtkdWxoNWhhYjlydGhraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6VaSpEhIcQuLuADHwO/giphy.gif"
     }
-
 
     # Display gesture checkboxes and get selected gestures
     selected_gestures = display_gesture_checkboxes(gesture_gifs)

@@ -1,9 +1,6 @@
 import cv2
 import numpy as np
-import requests
 import streamlit as st
-import tensorflow as tf
-from tensorflow.python.keras.models import load_model
 
 
 # Detection function

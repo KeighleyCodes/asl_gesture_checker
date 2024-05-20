@@ -1,13 +1,16 @@
-import traceback
 import av
 import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
 import tensorflow as tf
+import traceback
 from gcsfs import GCSFileSystem
 from streamlit_webrtc import (webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration)
 from shared_functions import (mediapipe_detection, extract_key_points, display_gif, display_gesture_checkboxes)
+
+# Initialize a Mediapipe Holistic object
+mp_holistic = mp.solutions.holistic
 
 # Initialize a GCS file system object
 fs = GCSFileSystem(project='keras-file-storage')
@@ -15,6 +18,18 @@ fs = GCSFileSystem(project='keras-file-storage')
 # Specify the path to the model file in the GCS bucket
 model_path = 'gs://keras-files/lesson2.keras'
 local_model_path = 'lesson2.keras'
+
+# Download the model file from GCS to local file system
+try:
+    with fs.open(model_path, 'rb') as f_in:
+        with open(local_model_path, 'wb') as f_out:
+            f_out.write(f_in.read())
+    st.write("Model downloaded successfully.")  # Debug statement
+except Exception as e:
+    # Display error message if model download fails
+    st.error(f"Error downloading the model: {e}")
+    st.error(f"Exception traceback: {traceback.format_exc()}")
+    st.stop()
 
 # Load the model outside the function
 try:
