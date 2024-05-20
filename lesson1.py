@@ -14,7 +14,7 @@ mp_holistic = mp.solutions.holistic
 
 
 # Define a function to download and load models directly from GCS
-@st.cache(ttl=600)  # Cache with a time-to-live (TTL) of 600 seconds (10 minutes)
+@st.cache_data(ttl=600) # Cache with a time-to-live (TTL) of 600 seconds (10 minutes)
 def download_and_load_model(fs, model_path):
     try:
         with fs.open(model_path, 'rb') as f:
